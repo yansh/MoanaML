@@ -1,20 +1,24 @@
 open Core.Std
   
+(* Signature for the STORE backend*)
+ 
 module type STORE =
   sig
-    type t
+    type t 
     
     (* storage name *)
     val name : string
       
+    val init : t
+      
     (*val init_storage: unit*)
-    val add_fact : t -> unit
+    val add : t -> Config.tuple -> t
       
     (* provide a garph-query as list of tuples and returns list of tuples    *)
     (* matching it                                                           *)
-    val query : 't list -> string list
+    val query :  t -> Config.tuple list -> Config.tuple list
       
-  end;;
+  end
   
 (* Signature for the Moana abstraction which will support many type of     *)
 (* backend storage.                                                        *)
@@ -23,33 +27,32 @@ module type GRAPH =
           
     (*type tuple*)
       
-    type storage
-      
-    val init: storage
-    
-    (*    val create_tuple : t -> t -> t -> t -> signature option  -> timestamp option -> tuple*)
-          
+    type t 
+     
+     
+    val init : t
     (* add fact as a tuple *)
-    val add : storage-> Config.tuple -> storage
+    val add : t -> Config.tuple -> t
       
     (* specify a query as list of tuple, this will return a matching list of *)
-    val map : storage -> Config.tuple list -> Config.tuple list       
+    val map : t -> Config.tuple list -> Config.tuple list       
       
-  end;;
+  end
   
-(* Functor from Element to MoanaGraph *)
-(*module Make(S: STORE):GRAPH = struct 
-
-  type t = S.t
-    (*let storage = S.init_storage*)
-
-    let add t =
-        S.add_fact t
+(* Functor from STORE to GRAPH *)
+module Make(S: STORE):GRAPH = struct      
     
-    let map list =
-      S.query list;;
-
+    type t = S.t
+    
+    let  init = S.init
+ (*  let create_tuple s p o c sg ts =
+      let tuple =  Config.Tuple(s, p, o, c, sg, ts) in
+         tuple;;*)
      
-    let test msg = print_endline msg;;
-    
-     end ;;*)
+    let add t  (tuple:Config.tuple) = 
+      let x=print_endline "Adding fact" in 
+           S.add t tuple ;;
+          
+let map (store:t) (query: Config.tuple list) = S.query store query;;
+      
+end ;;
