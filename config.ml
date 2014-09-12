@@ -13,4 +13,4 @@ type t = string
   
 type tuple = Tuple of  t  * t * obj_t * t * signature option  * timestamp option 
 
-type db = tuple list
+type db
