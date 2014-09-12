@@ -38,7 +38,7 @@ module SQLStore:Moana.STORE = struct
            | Sqlite3.Rc.OK -> db
            | _ -> assert false)    
       with 
-        | xcp -> assert false
+        | xcp -> (print_endline (Printexc.to_string xcp); db)      
         
       
      
@@ -65,6 +65,8 @@ module SQLStore:Moana.STORE = struct
             | _ -> assert false)
          with | xcp -> (print_endline (Printexc.to_string xcp); query)       
 end;;  
+
+(* Moana GRAPH with List storage as a backend *)
 module G:Moana.GRAPH = struct    
   
   module LS = LStore
@@ -80,7 +82,24 @@ module G:Moana.GRAPH = struct
     let map (store:t) (query: Config.tuple list) = LS.query store query;;
       
 end;;
+(* Moana GRAPH with SQLite as backend storage *)
 
+module G2:Moana.GRAPH = struct    
+  
+  module S = SQLStore
+    
+    type t = S.t
+    
+    let  init = S.init
+     
+    let add t  tuple = 
+      let x=print_endline "Adding fact" in 
+          S.add t tuple ;;
+          
+    let map (store:t) (query: Config.tuple list) = S.query store query;;
+      
+end;;
+  
 
 let t = Config.Tuple("subject", "predicate", "object", "context",None ,None);;
 
@@ -88,8 +107,12 @@ let t = Config.Tuple("subject", "predicate", "object", "context",None ,None);;
 let db = G.init;;
 G.add db t;;
 
-let sql_db = SQLStore.init;;
-SQLStore.add sql_db t;;
+let db = G2.init;;
+G2.add db t;;
+
+(*let sql_db = SQLStore.init;;
+SQLStore.add sql_db t;;*)
+
 (* generate Moana graph with a functor Make *)
 module MG = Moana.Make(LStore);;
 let db = MG.init;;
