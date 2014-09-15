@@ -5,11 +5,12 @@ open Core.Std
 module type STORE =
   sig
     type t 
+      
+    val db: t
     
     (* storage name *)
     val name : string
       
-    val init : t
       
     (*val init_storage: unit*)
     val add : t -> Config.tuple -> t
@@ -29,30 +30,28 @@ module type GRAPH =
       
     type t 
      
-     
-    val init : t
+    val graph: t     
     (* add fact as a tuple *)
-    val add : t -> Config.tuple -> t
+    val add : ?graph:t -> Config.tuple -> t
       
     (* specify a query as list of tuple, this will return a matching list of *)
-    val map : t -> Config.tuple list -> Config.tuple list       
+    val map : ?graph:t -> Config.tuple list -> Config.tuple list       
       
   end
   
 (* Functor from STORE to GRAPH *)
 module Make(S: STORE):GRAPH = struct      
     
-    type t = S.t
+   type t = S.t
     
-    let  init = S.init
- (*  let create_tuple s p o c sg ts =
-      let tuple =  Config.Tuple(s, p, o, c, sg, ts) in
-         tuple;;*)
+   let graph = S.db
+            
+   let add ?(graph=S.db) (tuple:Config.tuple) =       
+     let s= sprintf "Adding fact to %s" S.name in        
+      let x=print_endline s in  
+       S.add graph tuple ;;
      
-    let add t  (tuple:Config.tuple) = 
-      let x=print_endline "Adding fact" in 
-           S.add t tuple ;;
           
-let map (store:t) (query: Config.tuple list) = S.query store query;;
+   let map ?(graph=S.db) (query: Config.tuple list) = S.query graph  query;;
       
 end ;;

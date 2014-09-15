@@ -7,9 +7,9 @@ module LStore:Moana.STORE = struct
   
   type t = Config.tuple list
     
-  let name = "List store"
+  let name = "List"
     
-  let init = []
+  let db = []     
     
   let add storage tuple = storage @ [tuple] ;;
 
@@ -24,10 +24,9 @@ module SQLStore:Moana.STORE = struct
    
   type t = Sqlite3.db
     
-  let name = "Sql"
+  let name = "SqlDB"
     
-  let init = Msqlite.create_table name
-
+  let db = Msqlite.open_db name
      
   let add db tuple =  Msqlite.insert db tuple
           
@@ -42,14 +41,15 @@ module G:Moana.GRAPH = struct
   module LS = LStore
     
     type t = LS.t
-    
-    let  init = LS.init
-     
-    let add t  tuple = 
-      let x=print_endline "Adding fact" in 
-          LS.add t tuple ;;
+           
+    let graph = LS.db
+       
+    let add ?graph:t tuple = 
+      let s= sprintf "Adding fact to %s" LS.name in        
+      let x=print_endline s in  
+          LS.add graph tuple ;;
           
-    let map (store:t) (query: Config.tuple list) = LS.query store query;;
+    let map ?graph:t (query: Config.tuple list) = LS.query graph query;;
       
 end;;
 (* Moana GRAPH with SQLite as backend storage *)
@@ -58,32 +58,38 @@ module G2:Moana.GRAPH = struct
   
   module S = SQLStore
     
-    type t = S.t
+    type t = S.t   
     
-    let  init = S.init
+    let graph = S.db          
      
-    let add t  tuple = 
-      let x=print_endline "Adding fact" in 
-          S.add t tuple ;;
+    let add ?graph:t  tuple = 
+      let s= sprintf "Adding fact to %s" S.name in        
+      let x=print_endline s in  
+      S.add graph tuple ;;
           
-    let map (store:t) (query: Config.tuple list) = S.query store query;;
+    let map ?graph:t (query: Config.tuple list) = S.query graph query;;
       
-end;;
+end;; 
   
 
 let t = Config.Tuple("subject", "predicate", "object", "context",None ,None);;
 
 
-let db = G.init;;
-G.add db t;;
+G.add t;;
 
-let db = G2.init;;
-G2.add db t;;
+G2.add t;;
 
 (*let sql_db = SQLStore.init;;
      SQLStore.add sql_db t;;*)
 
-(* generate Moana graph with a functor Make *)
+(*generate Moana graph with a functor Make *)
+
 module MG = Moana.Make(LStore);;
-let db = MG.init;;
-MG.add db t;;
+let g = MG.graph;;
+MG.add  t;;
+
+
+module MG2 = Moana.Make(SQLStore);;
+let g = MG2.graph;;
+MG2.add t;;
+
