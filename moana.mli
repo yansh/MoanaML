@@ -1,4 +1,3 @@
- 
 (*
 * Copyright (c) 2014 Yan Shvartzshnaider
 *
@@ -15,12 +14,9 @@
 * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 *)
 
-open Printf  
-  
 
-(* SIGNATURES *)
-  
-   
+(* Signature for the STORE backend*)
+ 
 module type STORE =
     sig
       type t 
@@ -64,28 +60,21 @@ module type GRAPH =
       
   end;;
 
+module Make : functor (S:STORE) -> 
 
-(* Functor from STORE to GRAPH *)
-module Make(S: STORE):(GRAPH with type t = S.t) = struct      
-    
+sig
+
   type t = S.t
     
-  let graph = S.db
+  val graph: t
            
-  let add ?(g=S.db) (tuple:Config.tuple) =       
-     let s= sprintf "Adding fact to %s" S.name in        
-      let x=print_endline s in  
-        S.add g tuple ;;
+  val add: ?g:t -> Config.tuple -> t
      
           
-  let map ?(g=S.db) (query: Config.tuple list) = S.query g  query;;
+  val map: ?g:t -> Config.tuple list -> Config.tuple list;;
 
 
-  let print graph  =
-    let dbList = S.to_list graph in
-      let rec print_lst dbList = 
-          match dbList with
-              | [] -> print_endline "Finished"
-              | head::rest -> print_endline (Config.to_string head); print_lst rest in print_lst dbList ;;  
-      
-end ;;
+  val print: t -> unit
+  
+end;;
+

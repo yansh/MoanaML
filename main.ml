@@ -12,15 +12,17 @@
 * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*)
-
-open Printf  
-  
-  
+ *)
+open Printf
+open Moana
+    
 (* 
    List based storage
 *)
-module LStore:Moana.STORE = struct
+  
+(*============= IMPLEMENTATION ================== *)
+
+module LStore:STORE = struct
   
   type t = Config.tuple list
     
@@ -44,7 +46,7 @@ end;;
 
 (* SQLlite based backend storage *)
 
-module SQLStore:Moana.STORE = struct
+module SQLStore:STORE = struct
 
    
   type t = Sqlite3.db
@@ -62,7 +64,7 @@ end;;
 
 (* Moana GRAPH with List storage as a backend *)
 
-module G:Moana.GRAPH = struct    
+module G:GRAPH = struct    
   
   module LS = LStore
     
@@ -88,7 +90,7 @@ end;;
 
 (* Moana GRAPH with SQLite as backend storage *)
 
-module G2:Moana.GRAPH = struct    
+module G2:GRAPH = struct    
   
   module S = SQLStore
     
@@ -128,22 +130,22 @@ let tuples = [
   Config.Tuple("subject2", "predicate", "object", "context", None ,None);
   Config.Tuple("subject3", "predicate", "object", "context", None ,None)];;
 
-Config.print_tuples tuples;;
-     
-let db = G.add t1 in
-  let db2 = G.add ~g:db t2 in 
-  let db3 = G.add ~g:db2 t3 in
-  let db4 = G.add ~g:db3 t4 in
-      G.print db4;; 
+Config.print_tuples tuples;
 
-  
+let db = G.add t1 in
+let db2 = G.add ~g:db t2 in 
+    let db3 = G.add ~g:db2 t3 in
+      let db4 = G.add ~g:db3 t4 in
+        G.print db4;; 
+
+
 (*generate Moana graph with a functor Make *)
 
-module MG = Moana.Make(LStore);;
+module MG = Make(LStore);;
 let g = MG.graph;;
 MG.add  t1;;
 
 
-module MG2 = Moana.Make(SQLStore);;
+module MG2 = Make(SQLStore);;
 let g = MG2.graph;;
-     MG2.add t2;;
+     MG2.add t2;
