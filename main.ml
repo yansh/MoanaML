@@ -13,6 +13,7 @@
 * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
+
 open Printf
 open Moana
     
@@ -33,11 +34,11 @@ module LStore:STORE = struct
  let add storage tuple = storage @ [tuple] ;;
 
  (* TODO: Make it work *)
- let query (store:t) (query: Config.tuple list) =  
-  match query with
+let  query (store:t) (q: Config.tuple list) =  
+  match q with
   | [] -> print_endline "Done processing"; db
   |  rule::rest_of_rules ->  
-    List.filter (fun y -> rule=y) db;;
+    List.filter (fun y -> print_endline ("< " ^(Config.to_string y) ^ " > checking rule...<" ^ (Config.to_string rule) ^ " > ");  Config.compare rule y) store;;
       db;;
 
   let to_list db = db;;
@@ -101,9 +102,9 @@ module G2:GRAPH = struct
   let add ?(g=graph) tuple = 
     let s= sprintf "Adding fact to [ %s <- %s ]" S.name (Config.to_string tuple) in        
      let x=print_endline s in  
-       S.add graph tuple ;;
+       S.add g tuple ;;
           
-      let map ?(g=graph)  (query: Config.tuple list) = S.query graph query;;
+      let map ?(g=graph)  (query: Config.tuple list) = S.query g query;;
 
 
   let print graph  =
@@ -122,29 +123,33 @@ let t3 = Config.Tuple("subject2", "predicate", "object", "context", None ,None);
 let t4 = Config.Tuple("subject3", "predicate", "object", "context", None ,None);;
 
 
-let q1 = [Config.Tuple("*", "predicate", "*", "context", None ,None);];;
   
 let tuples = [
   Config.Tuple("subject", "predicate", "object", "context", None ,None);
-  Config.Tuple("subject1", "predicate", "object", "context", None ,None);
-  Config.Tuple("subject2", "predicate", "object", "context", None ,None);
-  Config.Tuple("subject3", "predicate", "object", "context", None ,None)];;
+  Config.Tuple("subject1", "predicate", "object1", "context", None ,None);
+  Config.Tuple("subject2", "predicate", "object2", "context", None ,None);
+  Config.Tuple("subject3", "predicate", "object3", "context", None ,None)];;
 
-Config.print_tuples tuples;
+(*Config.print_tuples tuples;;*)
 
 let db = G.add t1 in
 let db2 = G.add ~g:db t2 in 
     let db3 = G.add ~g:db2 t3 in
       let db4 = G.add ~g:db3 t4 in
-        G.print db4;; 
+          G.print db4;;  
 
-
+let q1 = [Config.Tuple("subject1", "predicate", "*", "context", None ,None);] ;;
 (*generate Moana graph with a functor Make *)
 
+(* run a basic query template  *)
 module MG = Make(LStore);;
 let g = MG.graph;;
-MG.add  t1;;
-
+let db = MG.add t1 in
+let db2 = MG.add ~g:db t2 in 
+    let db3 = MG.add ~g:db2 t3 in
+      let db4 = MG.add ~g:db3 t4 in
+          let tuples = MG.map  ~g:db4 q1 in
+            Config.print_tuples tuples;;
 
 module MG2 = Make(SQLStore);;
 let g = MG2.graph;;

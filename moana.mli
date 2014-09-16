@@ -60,6 +60,8 @@ module type GRAPH =
       
   end;;
 
+(* functor to create Moana graph from a give STORE implementation *)
+
 module Make : functor (S:STORE) -> 
 
 sig
