@@ -75,8 +75,8 @@ module G:GRAPH = struct
     
   let add ?(g=graph) (tuple:Config.tuple) =       
     let s= sprintf "Adding fact to [ %s <- %s ]" LS.name (Config.to_string tuple) in        
-      let x=print_endline s in  
-        LS.add g tuple ;;
+    print_endline s;
+    LS.add g tuple ;;
           
   let map ?(g=graph)  (query: Config.tuple list) = LS.query graph query;;
                  
@@ -101,8 +101,8 @@ module G2:GRAPH = struct
    
   let add ?(g=graph) tuple = 
     let s= sprintf "Adding fact to [ %s <- %s ]" S.name (Config.to_string tuple) in        
-     let x=print_endline s in  
-       S.add g tuple ;;
+    print_endline s;
+    S.add g tuple ;;
           
       let map ?(g=graph)  (query: Config.tuple list) = S.query g query;;
 

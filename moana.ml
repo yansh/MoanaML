@@ -74,8 +74,8 @@ module Make(S: STORE):(GRAPH with type t = S.t) = struct
            
   let add ?(g=S.db) (tuple:Config.tuple) =       
      let s= sprintf "Adding fact to %s" S.name in        
-      let x=print_endline s in  
-        S.add g tuple ;;
+     print_endline s;
+     S.add g tuple ;;
      
           
   let map ?(g=S.db) (query: Config.tuple list) = S.query g  query;;

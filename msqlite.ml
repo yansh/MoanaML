@@ -17,8 +17,9 @@ let create_table db =
              | _ -> assert false)     
         with | _ -> assert false
           
-let open_db name = let db = Sqlite3.db_open name in
-  let x=create_table db in
+let open_db name =
+  let db = Sqlite3.db_open name in
+  ignore(create_table db);
   db
                
 let insert db tuple = 
