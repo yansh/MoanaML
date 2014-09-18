@@ -156,4 +156,11 @@ let db2 = MG.add ~g:db t2 in
 
 module MG2 = Make(SQLStore);;
 let g = MG2.graph;;
-     MG2.add t2;
+MG2.add t2;;
+
+let qry l =
+  let l1 = List.filter (fun (_, p, _) -> p = "type") l in
+  let l2 = List.filter (fun (_, p, v2) -> p = "color" && v2 = "red") l in
+  List.fold_right (fun (_, _, v2) rst ->
+    List.filter (fun (v1, _, _) -> v1 = v2) l2) l1 [];;
+
