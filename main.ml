@@ -24,32 +24,33 @@ open Config
 (*============= IMPLEMENTATION ================== *)
 
 module LStore:STORE = struct
-
   type t = Config.tuple list
 
   let name = "List"
 
   let db = []
 
- let add storage tuple = storage @ [tuple] ;;
+  let add storage tuple = storage @ [tuple] ;;
 
- (* TODO: Make it work *)
-let  query (store:t) (q: Config.tuple list) =
-  match q with
-  | [] -> print_endline "Done processing"; db
-  |  rule::rest_of_rules ->
-    List.filter (fun y -> print_endline ("< " ^(Config.to_string y) ^ " > checking rule...<" ^ (Config.to_string rule) ^ " > ");  Config.compare rule y) store;;
-      db;;
+  (* TODO: Make it work *)
+  let  query (store : t) (q: Config.tuple list) =
+    match q with
+    | [] -> print_endline "Done processing"; db
+    | rule :: rest_of_rules ->
+      List.filter (fun y ->
+       print_endline ("< " ^
+        Config.to_string y ^
+        " > checking rule...<" ^
+        Config.to_string rule ^ " > ");
+        Config.compare rule y) store;;
+        db;;
 
   let to_list db = db;;
-
 end;;
 
 (* SQLlite based backend storage *)
 
 module SQLStore:STORE = struct
-
-
   type t = Sqlite3.db
 
   let name = "SqlDB"
