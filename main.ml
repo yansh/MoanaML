@@ -172,7 +172,17 @@ let q2 = {subj = Variable "?y";
 let qry = [q1;q2];;
 (*generate Moana graph with a functor Make and run a basic query template  *)
 
-module MG = Make(LStore);;
+let qry2 l =
+  let l1 = List.filter (fun { subj=_; pred=p; obj=_; ctxt = _ ;  time_stp = _; sign = _} ->  p = Constant "type") l in
+  let l2 = List.filter (fun { subj=_; pred=p; obj=v2; ctxt = _ ;  time_stp = _; sign = _} -> p = Constant "color" && v2 = Constant "red") l in
+  List.fold_right (fun { subj=_; pred=_; obj=v2; ctxt = _ ;  time_stp = _; sign = _} rst ->
+  List.filter (fun { subj=v1; pred=_; obj=_; ctxt = _ ;  time_stp = _; sign = _} -> v1 = v2) l2) l1 [];;
+
+
+print_endline "Running query:";;
+print_tuples (qry2 tuples);;
+  
+  (*module MG = Make(LStore);;
 let g = MG.graph;;
 let db = MG.add t1 in
 let db2 = MG.add ~g:db t2 in 
@@ -183,6 +193,6 @@ let db2 = MG.add ~g:db t2 in
 
 module MG2 = Make(SQLStore);;
 let g = MG2.graph;;
-MG2.add t2;;
+     MG2.add t2;;*)
 
 
