@@ -16,7 +16,7 @@
 
 open Printf
 open Moana
-    
+open Config   
 (* 
    List based storage
 *)
@@ -78,7 +78,7 @@ module G:GRAPH = struct
     print_endline s;
     LS.add g tuple ;;
           
-  let map ?(g=graph)  (query: Config.tuple list) = LS.query graph query;;
+  let map ?(g=graph)  (query: Config.tuple list) = LS.query g query;;
                  
 let print graph  =
     let dbList = LS.to_list graph in
@@ -116,21 +116,24 @@ module G2:GRAPH = struct
 end;; 
   
 
+let t1 = Tuple(Subject (Constant "a"), Predicate (Constant "type"), Object (Constant "Car"), Context (Constant "context"), None, None);;
+            
 
-let t1 = Config.Tuple("subject", "predicate", "object", "context", None ,None);;
-let t2 = Config.Tuple("subject1", "predicate", "object", "context", None ,None);;
-let t3 = Config.Tuple("subject2", "predicate", "object", "context", None ,None);;
-let t4 = Config.Tuple("subject3", "predicate", "object", "context", None ,None);;
+
+let t1 = Tuple(Subject (Constant "a"), Predicate (Constant "type"),  Object (Constant "Car"), Context( Constant "context"), None ,None);;
+let t2 = Tuple(Subject (Constant "a"), Predicate (Constant "hasColor"),  Object (Constant "Red"), Context(Constant "context"), None ,None);;
+let t3 = Tuple(Subject (Constant "b"), Predicate (Constant "type"),  Object (Constant "Chair"), Context(Constant "context"), None ,None);;
+let t4 = Tuple(Subject (Constant "b"), Predicate (Constant "hasColor"),  Object (Constant "green"), Context(Constant  "context"), None ,None);;
 
 
   
 let tuples = [
-  Config.Tuple("subject", "predicate", "object", "context", None ,None);
-  Config.Tuple("subject1", "predicate", "object1", "context", None ,None);
-  Config.Tuple("subject2", "predicate", "object2", "context", None ,None);
-  Config.Tuple("subject3", "predicate", "object3", "context", None ,None)];;
+Tuple(Subject (Constant "a"), Predicate (Constant "type"),  Object (Constant "Car"), Context( Constant "context"), None ,None);
+Tuple(Subject (Constant "a"), Predicate (Constant "hasColor"),  Object (Constant "Red"), Context(Constant "context"), None ,None);
+Tuple(Subject (Constant "b"), Predicate (Constant "type"),  Object (Constant "Chair"), Context(Constant "context"), None ,None);
+Tuple(Subject (Constant "b"), Predicate (Constant "hasColor"),  Object (Constant "green"), Context(Constant  "context"), None ,None)];;
 
-(*Config.print_tuples tuples;;*)
+Config.print_tuples tuples;;
 
 let db = G.add t1 in
 let db2 = G.add ~g:db t2 in 
@@ -138,10 +141,10 @@ let db2 = G.add ~g:db t2 in
       let db4 = G.add ~g:db3 t4 in
           G.print db4;;  
 
-let q1 = [Config.Tuple("subject1", "predicate", "*", "context", None ,None);] ;;
-(*generate Moana graph with a functor Make *)
+(* Graph query *)
+let q1 = [Tuple(Subject (Variable "?x"), Predicate (Constant "type"),  Object (Variable "?y"), Context( Constant "context"), None ,None)] ;;
 
-(* run a basic query template  *)
+(*generate Moana graph with a functor Make and run a basic query template  *)
 module MG = Make(LStore);;
 let g = MG.graph;;
 let db = MG.add t1 in
