@@ -116,22 +116,35 @@ module G2:GRAPH = struct
 end;; 
   
 
-let t1 = Tuple(Subject (Constant "a"), Predicate (Constant "type"), Object (Constant "Car"), Context (Constant "context"), None, None);;
+let t1 = {subj = Constant "a";
+          pred = Constant "type";
+          obj = Constant  "Car";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
             
 
-
-let t1 = Tuple(Subject (Constant "a"), Predicate (Constant "type"),  Object (Constant "Car"), Context( Constant "context"), None ,None);;
-let t2 = Tuple(Subject (Constant "a"), Predicate (Constant "hasColor"),  Object (Constant "Red"), Context(Constant "context"), None ,None);;
-let t3 = Tuple(Subject (Constant "b"), Predicate (Constant "type"),  Object (Constant "Chair"), Context(Constant "context"), None ,None);;
-let t4 = Tuple(Subject (Constant "b"), Predicate (Constant "hasColor"),  Object (Constant "green"), Context(Constant  "context"), None ,None);;
-
+let t2 = {subj = Constant "a";
+          pred = Constant "hasColor";
+          obj = Constant  "Red";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+let t3 = {subj = Constant "b";
+          pred = Constant "type";
+          obj = Constant  "Chair";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+let t4 = {subj = Constant "b";
+          pred = Constant "hasColor";
+          obj = Constant  "Green";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
 
   
-let tuples = [
-Tuple(Subject (Constant "a"), Predicate (Constant "type"),  Object (Constant "Car"), Context( Constant "context"), None ,None);
-Tuple(Subject (Constant "a"), Predicate (Constant "hasColor"),  Object (Constant "Red"), Context(Constant "context"), None ,None);
-Tuple(Subject (Constant "b"), Predicate (Constant "type"),  Object (Constant "Chair"), Context(Constant "context"), None ,None);
-Tuple(Subject (Constant "b"), Predicate (Constant "hasColor"),  Object (Constant "green"), Context(Constant  "context"), None ,None)];;
+let tuples = [t1;t2;t3;t4];;
 
 Config.print_tuples tuples;;
 
@@ -142,18 +155,34 @@ let db2 = G.add ~g:db t2 in
           G.print db4;;  
 
 (* Graph query *)
-let q1 = [Tuple(Subject (Variable "?x"), Predicate (Constant "type"),  Object (Variable "?y"), Context( Constant "context"), None ,None)] ;;
+let q1 = {subj = Variable "?x";
+          pred = Constant "type";
+          obj =  Variable "?y";
+          ctxt = Constant "context";
+          time_stp = None;
+          sign = None};;
 
+let q2 = {subj = Variable "?y";
+          pred = Constant "hasColor";
+          obj =  Constant "Red";
+          ctxt = Constant "context";
+          time_stp = None;
+          sign = None};;
+
+let qry = [q1;q2];;
 (*generate Moana graph with a functor Make and run a basic query template  *)
+
 module MG = Make(LStore);;
 let g = MG.graph;;
 let db = MG.add t1 in
 let db2 = MG.add ~g:db t2 in 
     let db3 = MG.add ~g:db2 t3 in
       let db4 = MG.add ~g:db3 t4 in
-          let tuples = MG.map  ~g:db4 q1 in
+          let tuples = MG.map  ~g:db4 qry in
             Config.print_tuples tuples;;
 
 module MG2 = Make(SQLStore);;
 let g = MG2.graph;;
-     MG2.add t2;
+MG2.add t2;;
+
+
