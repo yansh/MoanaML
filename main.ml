@@ -38,7 +38,7 @@ let  query (store:t) (q: Config.tuple list) =
   match q with
   | [] -> print_endline "Done processing"; db
   |  rule::rest_of_rules ->  
-    List.filter (fun y -> print_endline ("< " ^(Config.to_string y) ^ " > checking rule...<" ^ (Config.to_string rule) ^ " > ");  Config.compare rule y) store;;
+    List.filter (fun y -> print_endline ("< " ^(to_string y) ^ " > checking rule...<" ^ (to_string rule) ^ " > ");  Config.compare rule y) store;;
       db;;
 
   let to_list db = db;;

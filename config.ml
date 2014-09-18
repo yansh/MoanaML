@@ -1,5 +1,8 @@
 open Core.Std
-  
+
+exception Wrong_tuple
+exception Wrong_template
+
 type obj_t = string
     
 type context =string 
@@ -38,6 +41,10 @@ let to_string t =
   |  Tuple(Subject (Constant(s)), Predicate(Constant(p)) , Object (Constant(o)), _ , _ , _) ->  
     sprintf "%s %s %s" s p o
   | _ -> "Not printing this tuple." ;;
+
+ 
+      
+    
 
 let rec print_tuples tuples = 
        match tuples with
