@@ -26,6 +26,14 @@ type element =
 
 type tuple = Tuple of element * element * element * element * element option * element option
 
+type tuple' =
+  { subj : t element_type;
+    pred : t element_type;
+    obj : obj_t element_type;
+    ctxt : context element_type;
+    time_stp : timestamp element_type option;
+    sign : signature element_type option }
+
 type db
 
 let to_string t =
