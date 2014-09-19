@@ -136,6 +136,7 @@ let t3 = {subj = Constant "b";
           ctxt = Constant "context";
           time_stp =None;
           sign = None};;
+          
 let t4 = {subj = Constant "b";
           pred = Constant "hasColor";
           obj = Constant  "Green";
@@ -143,16 +144,30 @@ let t4 = {subj = Constant "b";
           time_stp =None;
           sign = None};;
 
+
+let t5 = {subj = Constant "c";
+          pred = Constant "type";
+          obj = Constant  "Chair";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+
+let t6 = {subj = Constant "c";
+          pred = Constant "hasColor";
+          obj = Constant  "Red";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
   
-let tuples = [t1;t2;t3;t4];;
+let tuples = [t1;t2;t3;t4;t5;t6];;
 
 Config.print_tuples tuples;;
 
-let db = G.add t1 in
+  (*let db = G.add t1 in
 let db2 = G.add ~g:db t2 in 
     let db3 = G.add ~g:db2 t3 in
       let db4 = G.add ~g:db3 t4 in
-          G.print db4;;  
+     G.print db4;;*)  
 
 (* Graph query *)
 let q1 = {subj = Variable "?x";
@@ -174,12 +189,12 @@ let qry = [q1;q2];;
 
 let qry2 l =
   let l1 = List.filter (fun { subj=_; pred=p; obj=_; ctxt = _ ;  time_stp = _; sign = _} ->  p = Constant "type") l in
-  let l2 = List.filter (fun { subj=_; pred=p; obj=v2; ctxt = _ ;  time_stp = _; sign = _} -> p = Constant "color" && v2 = Constant "red") l in
-  List.fold_right (fun { subj=_; pred=_; obj=v2; ctxt = _ ;  time_stp = _; sign = _} rst ->
-  List.filter (fun { subj=v1; pred=_; obj=_; ctxt = _ ;  time_stp = _; sign = _} -> v1 = v2) l2) l1 [];;
+  let l2 = List.filter (fun { subj=_; pred=p; obj=o2; ctxt = _ ;  time_stp = _; sign = _} -> p = Constant "hasColor" && o2 = Constant "Red") l in 
+  List.fold_right (fun { subj=s1; pred=_; obj=_; ctxt = _ ;  time_stp = _; sign = _} _ ->
+  List.filter (fun { subj=s2; pred=_; obj=_; ctxt = _ ;  time_stp = _; sign = _} -> s1 = s2) l2) l1 [];;
 
-
-print_endline "Running query:";;
+ 
+print_endline "Running query, results ";;
 print_tuples (qry2 tuples);;
   
   (*module MG = Make(LStore);;
@@ -193,6 +208,6 @@ let db2 = MG.add ~g:db t2 in
 
 module MG2 = Make(SQLStore);;
 let g = MG2.graph;;
-     MG2.add t2;;*)
-
+     MG2.add t2;;
+   *)
 
