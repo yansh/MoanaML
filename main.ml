@@ -187,17 +187,39 @@ let q2 = {subj = Variable "?y";
 let qry = [q1;q2];;
 (*generate Moana graph with a functor Make and run a basic query template  *)
 
+(*
+ MAP ?x {    
+     ?x type ?y
+     ?x color, Red   
+    }
+     
+*)
 let qry2 l =
-  let l1 = List.filter (fun { subj=_; pred=p; obj=_; ctxt = _ ;  time_stp = _; sign = _} ->  p = Constant "type") l in
-  let l2 = List.filter (fun { subj=_; pred=p; obj=o2; ctxt = _ ;  time_stp = _; sign = _} -> p = Constant "hasColor" && o2 = Constant "Red") l in 
-  List.fold_right (fun { subj=s1; pred=_; obj=_; ctxt = _ ;  time_stp = _; sign = _} _ ->
-  List.filter (fun { subj=s2; pred=_; obj=_; ctxt = _ ;  time_stp = _; sign = _} -> s1 = s2) l2) l1 [];;
+  let l1 = List.filter (fun { subj=_; pred=p; obj=_; ctxt = _ ;  time_stp = _; sign = _} ->  
+    p = Constant "type") l in (* all elements if predicate type *)
+  let l2 = List.filter (fun { subj=_; pred=p; obj=o2; ctxt = _ ;  time_stp = _; sign = _} -> 
+    p = Constant "hasColor" && o2 = Constant "Red") l in (* all elements that have color Red *)  
+  let rec join l1 l2 = match l1, l2 with  
+    | [] , [] -> []
+    | _, [] -> []
+    | [] , _ ->   []
+    | h1::t1, h2::t2 -> 
+      if h1.subj=h2.subj 
+      then 
+        [h1;h2] @  join t1 t2         
+      else 
+        join t1 l2  in let res=join l1 l2  in res;;
+        
+       
+  (*List.fold_right (fun { subj=s1; pred=_; obj=_; ctxt = _ ;  time_stp = _; sign = _} _ ->
+    List.filter (fun { subj=s2; pred=_; obj=_; ctxt = _ ;  time_stp = _; sign = _} -> 
+     s1 = s2) l2) l1 [];;*)
 
  
 print_endline "Running query, results ";;
-print_tuples (qry2 tuples);;
-  
-  (*module MG = Make(LStore);;
+print_tuples (qry2 tuples);(*;
+
+module MG = Make(LStore);;
 let g = MG.graph;;
 let db = MG.add t1 in
 let db2 = MG.add ~g:db t2 in 
@@ -209,5 +231,5 @@ let db2 = MG.add ~g:db t2 in
 module MG2 = Make(SQLStore);;
 let g = MG2.graph;;
      MG2.add t2;;
-   *)
-
+  
+ *)
