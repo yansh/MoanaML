@@ -195,10 +195,11 @@ let qry = [q1;q2];;
      
 *)
 let qry2 l =
-  let l1 = List.filter (fun { subj=_; pred=p; obj=_; ctxt = _ ;  time_stp = _; sign = _} ->  
-    p = Constant "type") l in (* all elements if predicate type *)
-  let l2 = List.filter (fun { subj=_; pred=p; obj=o2; ctxt = _ ;  time_stp = _; sign = _} -> 
-    p = Constant "hasColor" && o2 = Constant "Red") l in (* all elements that have color Red *)  
+  let l1 = List.filter (fun tup ->
+    tup.pred = Constant "type") l in (* all elements of predicate type *)
+  let l2 = List.filter (fun tup ->
+    tup.pred = Constant "hasColor" && tup.obj = Constant "Red") l in (* all elements that have color Red *)
+(*
   let rec join l1 l2 = match l1, l2 with  
     | [] , [] -> []
     | _, [] -> []
@@ -209,13 +210,12 @@ let qry2 l =
         [h1;h2] @  join t1 t2         
       else 
         join t1 l2  in let res=join l1 l2  in res;;
-        
-       
-  (*List.fold_right (fun { subj=s1; pred=_; obj=_; ctxt = _ ;  time_stp = _; sign = _} _ ->
-    List.filter (fun { subj=s2; pred=_; obj=_; ctxt = _ ;  time_stp = _; sign = _} -> 
-     s1 = s2) l2) l1 [];;*)
+*)
+  List.fold_right (fun tup1 acc ->
+    let join = List.filter (fun tup2 ->
+     tup1.subj = tup2.subj) l2 in
+    if join = [] then acc else tup1 :: join @ acc) l1 [];;
 
- 
 print_endline "Running query, results ";;
 print_tuples (qry2 tuples);(*;
 
