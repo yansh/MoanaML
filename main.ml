@@ -248,9 +248,8 @@ let make_query (db : tuple list) (qry : tuple list) : tuple list list =
     | Variable x ->
         if List.mem_assoc x var_scope then
           List.assoc x var_scope
-        else
-          q.subj
-    | _ -> q.subj in
+        else s q
+    | _ -> s q in
   (*Used to filter a part of a tuple record.
    * Returns a Boolean, indicating whether a match has occurred,
    * and possibly a variable-value pair (if we're matching against a variable)
