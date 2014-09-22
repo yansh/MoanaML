@@ -241,15 +241,13 @@ let make_query (db : tuple list) (qry : tuple list) : tuple list list =
   (*Try to evaluate a variable occurring in query q, occurring
    * in the context of var_scope. If the variable doesn't appear
    * in the scope, then we simply return the variable.
-   * Parameter f is a function applied to the retrieved value
-   * before it is returned.
    * NOTE Annoyingly in OCaml there are no first-class selectors,
    *   so we must pass the selector as a parameter, s in this case.*)
-  let try_eval s q var_scope f =
+  let try_eval s q var_scope =
     match s q with
     | Variable x ->
         if List.mem_assoc x var_scope then
-          f (List.assoc x var_scope)
+          List.assoc x var_scope
         else
           q.subj
     | _ -> q.subj in
@@ -274,11 +272,9 @@ let make_query (db : tuple list) (qry : tuple list) : tuple list list =
   let make_query' ((var_scope, pre_soln) : ext_tuple) (q : tuple) : ext_tuple list =
     (*q' is a specialised version of q wrt the current pre_soln*)
     let q' =
-      { subj = try_eval (fun q -> q.subj) q var_scope (fun x -> x);
-        pred = try_eval (fun q -> q.pred) q var_scope (fun x -> x);
-        (*obj = try_eval (fun q -> q.obj) q var_scope (fun x -> t_to_objt x);
-         * FIXME curious*)
-        obj = try_eval (fun q -> q.obj) q var_scope (fun x -> x);
+      { subj = try_eval (fun q -> q.subj) q var_scope;
+        pred = try_eval (fun q -> q.pred) q var_scope;
+        obj = try_eval (fun q -> q.obj) q var_scope;
         ctxt = q.ctxt; (*FIXME ignored for the time being*)
         time_stp = q.time_stp; (*FIXME ignored for the time being*)
         sign = q.sign (*FIXME ignored for the time being*) } in
