@@ -234,7 +234,7 @@ let g = MG2.graph;;
   
  *)
 
-(*FIXME naming*)
+(*Extended tuple: a tuple extended with a valuation of variables.*)
 type ext_tuple = (string * Config.t Config.element_type) list * tuple list
 
 let make_query (db : tuple list) (qry : tuple list) : tuple list list =
@@ -251,10 +251,13 @@ let make_query (db : tuple list) (qry : tuple list) : tuple list list =
         if List.mem_assoc x var_scope then
           f (List.assoc x var_scope)
         else
-          q.subj (*FIXME maybe use Wildcard?*)
+          q.subj
     | _ -> q.subj in
-  (*Used to filter a part of a tuple below.
-   * FIXME better comment
+  (*Used to filter a part of a tuple record.
+   * Returns a Boolean, indicating whether a match has occurred,
+   * and possibly a variable-value pair (if we're matching against a variable)
+   * -- this pair is used to extend the valuation which forms part of an
+   * extended tuple.
    * s is a record selector
    * q is a query tuple
    * v is a tuple in the database*)
@@ -267,8 +270,9 @@ let make_query (db : tuple list) (qry : tuple list) : tuple list list =
        * this mapping.*)
     | Variable x -> (true, Some (x, s v))
     | Constant _ -> (s q = s v, None)
-    | Wildcard -> failwith "I don't like wildcards" in
+    | Wildcard -> failwith "Malformed query" in
   let make_query' ((var_scope, pre_soln) : ext_tuple) (q : tuple) : ext_tuple list =
+    (*q' is a specialised version of q wrt the current pre_soln*)
     let q' =
       { subj = try_eval (fun q -> q.subj) q var_scope (fun x -> x);
         pred = try_eval (fun q -> q.pred) q var_scope (fun x -> x);
@@ -294,7 +298,7 @@ let make_query (db : tuple list) (qry : tuple list) : tuple list list =
   List.fold_right (fun q acc ->
     List.map (fun ps -> make_query' ps q) acc
     |> List.concat) qry [([], [])]
-  |> List.map (fun (_, s) -> s);; (*ext_tuple -> tuple*)
+  |> List.map snd;; (*Map ext_tuple to tuple, since we don't need the valuation any longer*)
 
 
 print_endline "Running FANCY query, results ";;
