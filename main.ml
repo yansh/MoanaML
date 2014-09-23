@@ -266,7 +266,8 @@ let make_query (db : tuple list) (qry : tuple list) : tuple list list =
         if List.mem_assoc x var_scope then
           List.assoc x var_scope
         else s q
-    | _ -> s q in
+    | Constant _ -> s q
+    | Wildcard -> failwith "Malformed query" in
   (*Used to filter a part of a tuple record.
    * Returns a Boolean, indicating whether a match has occurred,
    * and possibly a variable-value pair (if we're matching against a variable)
@@ -300,9 +301,9 @@ let make_query (db : tuple list) (qry : tuple list) : tuple list list =
       let (m3, v3) = sub_filter (fun q -> q.obj) q' v in
       let scope_ext =
         List.fold_right (fun v acc ->
-            match v with
-            | None -> acc
-            | Some x -> x :: acc) [v1; v2; v3] [] in
+          match v with
+          | None -> acc
+          | Some x -> x :: acc) [v1; v2; v3] [] in
       (*FIXME remember that we're ignoring ctxt, time_stp and sign*)
       if m1 && m2 && m3 then
         (scope_ext @ var_scope, v :: pre_soln) :: acc
