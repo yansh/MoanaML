@@ -126,10 +126,11 @@ let t1 = {subj = Constant "a";
 
 let t2 = {subj = Constant "a";
           pred = Constant "hasColor";
-          obj = Constant  "Red";
+          obj = Constant  "c";
           ctxt = Constant "context";
           time_stp =None;
           sign = None};;
+
 let t3 = {subj = Constant "b";
           pred = Constant "type";
           obj = Constant  "Chair";
@@ -139,7 +140,7 @@ let t3 = {subj = Constant "b";
           
 let t4 = {subj = Constant "b";
           pred = Constant "hasColor";
-          obj = Constant  "Green";
+          obj = Constant  "c";
           ctxt = Constant "context";
           time_stp =None;
           sign = None};;
@@ -147,18 +148,20 @@ let t4 = {subj = Constant "b";
 
 let t5 = {subj = Constant "c";
           pred = Constant "type";
-          obj = Constant  "Chair";
+          obj = Constant  "Color";
           ctxt = Constant "context";
           time_stp =None;
           sign = None};;
 
+
 let t6 = {subj = Constant "c";
-          pred = Constant "hasColor";
-          obj = Constant  "Red";
+          pred = Constant "rgbValue";
+          obj = Constant  "White";
           ctxt = Constant "context";
           time_stp =None;
           sign = None};;
-  
+
+
 let tuples = [t1;t2;t3;t4;t5;t6];;
 
 Config.print_tuples tuples;;
@@ -172,19 +175,33 @@ let db2 = G.add ~g:db t2 in
 (* Graph query *)
 let q1 = {subj = Variable "?x";
           pred = Constant "type";
-          obj =  Variable "?y";
+          obj =  Variable "Car";
           ctxt = Constant "context";
           time_stp = None;
           sign = None};;
 
 let q2 = {subj = Variable "?x";
           pred = Constant "hasColor";
-          obj =  Constant "Red";
+          obj =  Constant "?y";
           ctxt = Constant "context";
           time_stp = None;
           sign = None};;
 
-let qry = [q1;q2];;
+let q3 = {subj = Variable "?y";
+          pred = Constant "type";
+          obj =  Constant "Color";
+          ctxt = Constant "context";
+          time_stp = None;
+          sign = None};;
+
+let q4 = {subj = Variable "?y";
+          pred = Constant "rgbValue";
+          obj =  Constant "White";
+          ctxt = Constant "context";
+          time_stp = None;
+          sign = None};;
+
+let qry = [q1;q2;q3;q4];;
 (*generate Moana graph with a functor Make and run a basic query template  *)
 
 (*
