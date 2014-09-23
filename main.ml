@@ -175,14 +175,14 @@ let db2 = G.add ~g:db t2 in
 (* Graph query *)
 let q1 = {subj = Variable "?x";
           pred = Constant "type";
-          obj =  Variable "Car";
+          obj =  Constant "Car";
           ctxt = Constant "context";
           time_stp = None;
           sign = None};;
 
 let q2 = {subj = Variable "?x";
           pred = Constant "hasColor";
-          obj =  Constant "?y";
+          obj =  Variable "?y";
           ctxt = Constant "context";
           time_stp = None;
           sign = None};;
