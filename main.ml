@@ -177,7 +177,7 @@ let q1 = {subj = Variable "?x";
           time_stp = None;
           sign = None};;
 
-let q2 = {subj = Variable "?y";
+let q2 = {subj = Variable "?x";
           pred = Constant "hasColor";
           obj =  Constant "Red";
           ctxt = Constant "context";
@@ -233,3 +233,69 @@ let g = MG2.graph;;
      MG2.add t2;;
   
  *)
+
+(*Extended tuple: a tuple extended with a valuation of variables.*)
+type ext_tuple = (string * Config.t Config.element_type) list * tuple list
+
+let make_query (db : tuple list) (qry : tuple list) : tuple list list =
+  (*Try to evaluate a variable occurring in query q, occurring
+   * in the context of var_scope. If the variable doesn't appear
+   * in the scope, then we simply return the variable.
+   * NOTE Annoyingly in OCaml there are no first-class selectors,
+   *   so we must pass the selector as a parameter, s in this case.*)
+  let try_eval s q var_scope =
+    match s q with
+    | Variable x ->
+        if List.mem_assoc x var_scope then
+          List.assoc x var_scope
+        else s q
+    | _ -> s q in
+  (*Used to filter a part of a tuple record.
+   * Returns a Boolean, indicating whether a match has occurred,
+   * and possibly a variable-value pair (if we're matching against a variable)
+   * -- this pair is used to extend the valuation which forms part of an
+   * extended tuple.
+   * s is a record selector
+   * q is a query tuple
+   * v is a tuple in the database*)
+  let sub_filter s q v =
+    match s q with
+      (*Remaining variables are treated as wildcards,
+       * but keep the value the variable evaluates to
+       * since, if this tuple _does_ bring us closer to
+       * a solution, we'll need to extent var_scope with
+       * this mapping.*)
+    | Variable x -> (true, Some (x, s v))
+    | Constant _ -> (s q = s v, None)
+    | Wildcard -> failwith "Malformed query" in
+  let make_query' ((var_scope, pre_soln) : ext_tuple) (q : tuple) : ext_tuple list =
+    (*q' is a specialised version of q wrt the current pre_soln*)
+    let q' =
+      { subj = try_eval (fun q -> q.subj) q var_scope;
+        pred = try_eval (fun q -> q.pred) q var_scope;
+        obj = try_eval (fun q -> q.obj) q var_scope;
+        ctxt = q.ctxt; (*FIXME ignored for the time being*)
+        time_stp = q.time_stp; (*FIXME ignored for the time being*)
+        sign = q.sign (*FIXME ignored for the time being*) } in
+    List.fold_right (fun v acc ->
+      let (m1, v1) = sub_filter (fun q -> q.subj) q' v in
+      let (m2, v2) = sub_filter (fun q -> q.pred) q' v in
+      let (m3, v3) = sub_filter (fun q -> q.obj) q' v in
+      let scope_ext =
+        List.fold_right (fun v acc ->
+            match v with
+            | None -> acc
+            | Some x -> x :: acc) [v1; v2; v3] [] in
+      (*FIXME remember that we're ignoring ctxt, time_stp and sign*)
+      if m1 && m2 && m3 then
+        (scope_ext @ var_scope, v :: pre_soln) :: acc
+      else acc) db [] in
+  List.fold_right (fun q acc ->
+    List.map (fun ps -> make_query' ps q) acc
+    |> List.concat) qry [([], [])]
+  |> List.map snd;; (*Map ext_tuple to tuple, since we don't need the valuation any longer*)
+
+
+print_endline "Running FANCY query, results ";;
+print_tuples_list (make_query tuples qry);
+

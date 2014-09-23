@@ -19,6 +19,13 @@ type 't element_type =
   | Constant of 't
   | Wildcard
 
+(* Mappings between the different sorts of data.
+ * In this case, since both are represented as strings,
+ * the mapping is the identity function; but the mappings
+ * can be made more complex when the types t and obj_t
+ * are defined further (if they happen to be different).*)
+let t_to_objt : (t -> obj_t) = fun x -> x
+let objt_to_t : (obj_t -> t) = fun x -> x
 
 type tuple =
   { subj : t element_type;
@@ -47,6 +54,12 @@ let rec print_tuples tuples =
        match tuples with
        | [] -> print_endline "Finished List"
        |  head::rest -> print_endline (to_string head); print_tuples rest;;
+
+let print_tuples_list tuples =
+  List.map ~f:(fun t ->
+    print_endline "[";
+    print_tuples t;
+    print_endline "]") tuples;;
 
 let compare t1 t2 =
   if t1.subj=t2.subj || t1.subj = Wildcard ||  t2.subj =  Wildcard then
