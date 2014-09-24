@@ -297,7 +297,7 @@ let q1 = {subj = Variable "?x";
 
 let q2 = {subj = Variable "?x";
           pred = Constant "hasColor";
-          obj =  Variable "Red";
+          obj =  Constant "Red";
           ctxt = Constant "context";
           time_stp = None;
           sign = None};;
@@ -342,7 +342,7 @@ let query1 = [q1;q2];;
 let q1_exp_res = [[t1;t9]];;
 let res_q1 = execute_query tuples query1;;
 (*print_tuples_list res_q1;;
- print_tuples_list q1__exp_res;;*)
+ print_tuples_list q1_exp_res;;*)
 
 check_test q1_exp_res res_q1;;
 
@@ -360,9 +360,9 @@ check_test q1_exp_res res_q1;;
 print_endline "Running query 2, results ";;
 let query2 = [q1;q3;q4;q5] ;;
 let q2_exp_res = [[t1;t2;t5;t7];[t3;t4;t5;t7]];; 
-(*print_tuples_list (make_query tuples query1);;*)
-
 let res_q2 = execute_query tuples query2;;
+(*print_tuples_list res_q2;;
+   print_tuples_list q2_exp_res;;*)
 check_test q2_exp_res res_q2 ;;
 
 
