@@ -116,77 +116,6 @@ module G2:GRAPH = struct
 end;; 
   
 
-let t1 = {subj = Constant "a";
-          pred = Constant "type";
-          obj = Constant  "Car";
-          ctxt = Constant "context";
-          time_stp =None;
-          sign = None};;
-            
-
-let t2 = {subj = Constant "a";
-          pred = Constant "hasColor";
-          obj = Constant  "Red";
-          ctxt = Constant "context";
-          time_stp =None;
-          sign = None};;
-let t3 = {subj = Constant "b";
-          pred = Constant "type";
-          obj = Constant  "Chair";
-          ctxt = Constant "context";
-          time_stp =None;
-          sign = None};;
-          
-let t4 = {subj = Constant "b";
-          pred = Constant "hasColor";
-          obj = Constant  "Green";
-          ctxt = Constant "context";
-          time_stp =None;
-          sign = None};;
-
-
-let t5 = {subj = Constant "c";
-          pred = Constant "type";
-          obj = Constant  "Chair";
-          ctxt = Constant "context";
-          time_stp =None;
-          sign = None};;
-
-let t6 = {subj = Constant "c";
-          pred = Constant "hasColor";
-          obj = Constant  "Red";
-          ctxt = Constant "context";
-          time_stp =None;
-          sign = None};;
-  
-let tuples = [t1;t2;t3;t4;t5;t6];;
-
-Config.print_tuples tuples;;
-
-  (*let db = G.add t1 in
-let db2 = G.add ~g:db t2 in 
-    let db3 = G.add ~g:db2 t3 in
-      let db4 = G.add ~g:db3 t4 in
-     G.print db4;;*)  
-
-(* Graph query *)
-let q1 = {subj = Variable "?x";
-          pred = Constant "type";
-          obj =  Variable "?y";
-          ctxt = Constant "context";
-          time_stp = None;
-          sign = None};;
-
-let q2 = {subj = Variable "?x";
-          pred = Constant "hasColor";
-          obj =  Constant "Red";
-          ctxt = Constant "context";
-          time_stp = None;
-          sign = None};;
-
-let qry = [q1;q2];;
-(*generate Moana graph with a functor Make and run a basic query template  *)
-
 (*
  MAP ?x {    
      ?x type ?y
@@ -199,45 +128,16 @@ let qry2 l =
     tup.pred = Constant "type") l in (* all elements of predicate type *)
   let l2 = List.filter (fun tup ->
     tup.pred = Constant "hasColor" && tup.obj = Constant "Red") l in (* all elements that have color Red *)
-(*
-  let rec join l1 l2 = match l1, l2 with  
-    | [] , [] -> []
-    | _, [] -> []
-    | [] , _ ->   []
-    | h1::t1, h2::t2 -> 
-      if h1.subj=h2.subj 
-      then 
-        [h1;h2] @  join t1 t2         
-      else 
-        join t1 l2  in let res=join l1 l2  in res;;
-*)
   List.fold_right (fun tup1 acc ->
     let join = List.filter (fun tup2 ->
      tup1.subj = tup2.subj) l2 in
     if join = [] then acc else tup1 :: join @ acc) l1 [];;
 
-print_endline "Running query, results ";;
-print_tuples (qry2 tuples);(*;
-
-module MG = Make(LStore);;
-let g = MG.graph;;
-let db = MG.add t1 in
-let db2 = MG.add ~g:db t2 in 
-    let db3 = MG.add ~g:db2 t3 in
-      let db4 = MG.add ~g:db3 t4 in
-          let tuples = MG.map  ~g:db4 qry in
-            Config.print_tuples tuples;;
-
-module MG2 = Make(SQLStore);;
-let g = MG2.graph;;
-     MG2.add t2;;
-  
- *)
 
 (*Extended tuple: a tuple extended with a valuation of variables.*)
 type ext_tuple = (string * Config.t Config.element_type) list * tuple list
 
-let make_query (db : tuple list) (qry : tuple list) : tuple list list =
+let execute_query (db : tuple list) (qry : tuple list) : tuple list list =
   (*Try to evaluate a variable occurring in query q, occurring
    * in the context of var_scope. If the variable doesn't appear
    * in the scope, then we simply return the variable.
@@ -296,6 +196,199 @@ let make_query (db : tuple list) (qry : tuple list) : tuple list list =
   |> List.map snd;; (*Map ext_tuple to tuple, since we don't need the valuation any longer*)
 
 
-print_endline "Running FANCY query, results ";;
-print_tuples_list (make_query tuples qry);
+(* Compare the output results with expected results *)
+
+let check_test l  l1  =
+  let fl = List.flatten l and fl1 = List.flatten l1 in  
+      let rec compare_list res exp_res = 
+        match res, exp_res with
+          [], [] -> true
+          | [], _
+          | _,  [] -> false
+          | h::t, h2::t2 ->  h=h2 && compare_list t t2  in         
+   let c = compare_list fl fl1  in                    
+      if c=true then 
+        print_endline "TRUE"
+      else            
+        failwith "FAIL";;
+    
+  
+
+let t1 = {subj = Constant "a";
+          pred = Constant "type";
+          obj = Constant  "Car";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+            
+
+let t2 = {subj = Constant "a";
+          pred = Constant "hasColor";
+          obj = Constant  "c";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+
+let t3 = {subj = Constant "b";
+          pred = Constant "type";
+          obj = Constant  "Chair";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+          
+let t4 = {subj = Constant "b";
+          pred = Constant "hasColor";
+          obj = Constant  "c";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+
+
+let t5 = {subj = Constant "c";
+          pred = Constant "type";
+          obj = Constant  "Color";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+
+let t6 = {subj = Constant "c1";
+          pred = Constant "type";
+          obj = Constant  "Color";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+          
+
+let t7 = {subj = Constant "c";
+          pred = Constant "rgbValue";
+          obj = Constant  "White";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+
+let t8 = {subj = Constant "c1";
+          pred = Constant "rgbValue";
+          obj = Constant  "Red";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+
+let t9 = {subj = Constant "a";
+          pred = Constant "hasColor";
+          obj = Constant  "Red";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+
+let tuples = [t1;t2;t3;t4;t5;t6;t7;t8;t9];;
+
+(*Config.print_tuples tuples;;*)
+
+  (*let db = G.add t1 in
+let db2 = G.add ~g:db t2 in 
+    let db3 = G.add ~g:db2 t3 in
+      let db4 = G.add ~g:db3 t4 in
+     G.print db4;;*)  
+
+(*************** QUERIES *******************)
+
+let q1 = {subj = Variable "?x";
+          pred = Constant "type";
+          obj =  Variable "Car";
+          ctxt = Constant "context";
+          time_stp = None;
+          sign = None};;
+
+let q2 = {subj = Variable "?x";
+          pred = Constant "hasColor";
+          obj =  Variable "Red";
+          ctxt = Constant "context";
+          time_stp = None;
+          sign = None};;
+
+let q3 = {subj = Variable "?x";
+          pred = Constant "hasColor";
+          obj =  Variable "?y";
+          ctxt = Constant "context";
+          time_stp = None;
+          sign = None};;
+
+let q4 = {subj = Variable "?y";
+          pred = Constant "type";
+          obj =  Constant "Color";
+          ctxt = Constant "context";
+          time_stp = None;
+          sign = None};;
+
+let q5 = {subj = Variable "?y";
+          pred = Constant "rgbValue";
+          obj =  Constant "White";
+          ctxt = Constant "context";
+          time_stp = None;
+          sign = None};;
+
+
+
+(*
+ MAP {    
+     ?x, type, Car
+     ?x, hasColor, Red   
+    }
+     
+*)
+
+let query1 = [q1;q2];;
+
+let q1_exp_res = [[t1;t9]];;
+  
+(*
+ MAP  {    
+     ?x, type, Car
+     ?x, color, ?y
+     ?y, type, Color
+     ?y, rgbValue, White  
+    }
+     
+*)
+
+let query2 = [q1;q3;q4;q5] ;;
+let q2_exp_res = [[t1;t2;t5;t7];[t3;t4;t5;t7]];; 
+
+print_endline "---- Unit tests----- ";;
+print_endline "Running query 1, results ";;
+
+(*print_tuples_list (make_query tuples query1);;*)
+
+let res_q1 = execute_query tuples query1;;
+(*print_tuples_list res_q1;;
+ print_tuples_list q1__exp_res;;*)
+check_test q1_exp_res res_q1 ;;
+
+print_endline "Running query 2, results ";;
+
+let res_q2 = execute_query tuples query2;;
+check_test q2_exp_res res_q2 ;;
+
+(*print_endline "Running query, results ";;
+ print_tuples (qry2 tuples);*)  
+    
+(*generate Moana graph with a functor Make and run a basic query template  *)
+
+(*;
+
+module MG = Make(LStore);;
+let g = MG.graph;;
+let db = MG.add t1 in
+let db2 = MG.add ~g:db t2 in 
+    let db3 = MG.add ~g:db2 t3 in
+      let db4 = MG.add ~g:db3 t4 in
+          let tuples = MG.map  ~g:db4 qry in
+            Config.print_tuples tuples;;
+
+module MG2 = Make(SQLStore);;
+let g = MG2.graph;;
+     MG2.add t2;;
+  
+ *)
+
 
