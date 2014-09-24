@@ -47,7 +47,7 @@ end;;
 
 (* SQLlite based backend storage *)
 
-module SQLStore:STORE = struct
+  (*module SQLStore:STORE = struct
 
    
   type t = Sqlite3.db
@@ -61,7 +61,7 @@ module SQLStore:STORE = struct
   let query (db:t) (query: Config.tuple list) =   Msqlite.select db query
 
   let to_list db = [] (* TODO *)
-end;;  
+     end;;*)  
 
 (* Moana GRAPH with List storage as a backend *)
 
@@ -91,7 +91,7 @@ end;;
 
 (* Moana GRAPH with SQLite as backend storage *)
 
-module G2:GRAPH = struct    
+(*module G2:GRAPH = struct    
   
   module S = SQLStore
     
@@ -114,7 +114,7 @@ module G2:GRAPH = struct
               | [] -> print_endline "Finished"
               |  head::rest -> print_endline (Config.to_string head); print_lst rest in print_lst dbList ;; 
 end;; 
-  
+*)
 
 
 (*
@@ -209,7 +209,7 @@ let check_test l  l1  =
           | h::t, h2::t2 ->  h=h2 && compare_list t t2  in         
    let c = compare_list fl fl1  in                    
       if c=true then 
-        print_endline "TRUE"
+        print_endline "PASS"
       else            
         failwith "FAIL";;
     
@@ -285,13 +285,8 @@ let tuples = [t1;t2;t3;t4;t5;t6;t7;t8;t9];;
 
 (*Config.print_tuples tuples;;*)
 
-  (*let db = G.add t1 in
-let db2 = G.add ~g:db t2 in 
-    let db3 = G.add ~g:db2 t3 in
-      let db4 = G.add ~g:db3 t4 in
-     G.print db4;;*)  
 
-(*************** QUERIES *******************)
+(*************** QUERY TEMPLATE TUPLES *******************)
 
 let q1 = {subj = Variable "?x";
           pred = Constant "type";
@@ -330,7 +325,10 @@ let q5 = {subj = Variable "?y";
 
 
 
-(*
+print_endline "---- Unit tests----- ";;
+
+(* TEST 1:
+   
  MAP {    
      ?x, type, Car
      ?x, hasColor, Red   
@@ -338,11 +336,18 @@ let q5 = {subj = Variable "?y";
      
 *)
 
-let query1 = [q1;q2];;
+print_endline "Running query 1, results ";;
 
+let query1 = [q1;q2];;
 let q1_exp_res = [[t1;t9]];;
-  
-(*
+let res_q1 = execute_query tuples query1;;
+(*print_tuples_list res_q1;;
+ print_tuples_list q1__exp_res;;*)
+
+check_test q1_exp_res res_q1;;
+
+(* TEST 2:
+   
  MAP  {    
      ?x, type, Car
      ?x, color, ?y
@@ -352,24 +357,17 @@ let q1_exp_res = [[t1;t9]];;
      
 *)
 
+print_endline "Running query 2, results ";;
 let query2 = [q1;q3;q4;q5] ;;
 let q2_exp_res = [[t1;t2;t5;t7];[t3;t4;t5;t7]];; 
-
-print_endline "---- Unit tests----- ";;
-print_endline "Running query 1, results ";;
-
 (*print_tuples_list (make_query tuples query1);;*)
-
-let res_q1 = execute_query tuples query1;;
-(*print_tuples_list res_q1;;
- print_tuples_list q1__exp_res;;*)
-check_test q1_exp_res res_q1 ;;
-
-print_endline "Running query 2, results ";;
 
 let res_q2 = execute_query tuples query2;;
 check_test q2_exp_res res_q2 ;;
 
+
+
+(*============================== EXTRA ================================== *)
 (*print_endline "Running query, results ";;
  print_tuples (qry2 tuples);*)  
     
@@ -392,4 +390,10 @@ let g = MG2.graph;;
   
  *)
 
+
+  (*let db = G.add t1 in
+let db2 = G.add ~g:db t2 in 
+    let db3 = G.add ~g:db2 t3 in
+      let db4 = G.add ~g:db3 t4 in
+     G.print db4;;*)  
 
