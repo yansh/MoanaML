@@ -44,7 +44,7 @@ let to_string t =
    obj = Constant(o); 
    ctxt = Constant(c); 
    time_stp = _ ; 
-   sign = _}-> sprintf "%s %s %s" s p o  
+   sign = _}-> sprintf "< %s %s %s >" s p o  
   | _ -> "Not printing this tuple." ;;
 
 
@@ -52,14 +52,12 @@ let to_string t =
   
 let rec print_tuples tuples =
        match tuples with
-       | [] -> print_endline "Finished List"
+       | [] -> print_endline "--"
        |  head::rest -> print_endline (to_string head); print_tuples rest;;
 
 let print_tuples_list tuples =
-  List.map ~f:(fun t ->
-    print_endline "[";
-    print_tuples t;
-    print_endline "]") tuples;;
+  List.map ~f:(fun t ->print_tuples t) tuples;;
+
 
 let compare t1 t2 =
   if t1.subj=t2.subj || t1.subj = Wildcard ||  t2.subj =  Wildcard then
