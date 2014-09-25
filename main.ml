@@ -30,42 +30,18 @@ module LStore:STORE = struct
   
   type t = Config.tuple list
     
-  let name = "List"
+  let name = "List store"
     
   let db = []      
     
- let add storage tuple = storage @ [tuple] ;;
+  let add storage tuple = storage @ [tuple] ;;
 
-(* TODO: Make it work *) 
-let  query (store:t) (q: Config.tuple list) =  
-  match q with
-  | [] -> print_endline "Done processing"; db
-  |  rule::rest_of_rules -> 
-    List.filter (fun y -> print_endline ("< " ^(to_string y) ^ " > checking rule...<" ^ (to_string rule) ^ " > ");  
-      Config.compare rule y) store;;
-      db;;
+  let  query (store:t) (q: Config.tuple list) =  execute_query store q
 
   let to_list db = db;;
 
 end;;
 
-(* SQLlite based backend storage *)
-
-  (*module SQLStore:STORE = struct
-
-   
-  type t = Sqlite3.db
-    
-  let name = "SqlDB"
-    
-  let db = Msqlite.open_db name
-     
-  let add db tuple =  Msqlite.insert db tuple
-          
-  let query (db:t) (query: Config.tuple list) =   Msqlite.select db query
-
-  let to_list db = [] (* TODO *)
-     end;;*)  
 
 (* Moana GRAPH with List storage as a backend *)
 
@@ -92,6 +68,24 @@ let print graph  =
               | head::rest -> print_endline (Config.to_string head); print_lst rest in print_lst dbList ;; 
             
 end;;
+
+(* SQLlite based backend storage *)
+
+  (*module SQLStore:STORE = struct
+
+   
+  type t = Sqlite3.db
+    
+  let name = "SqlDB"
+    
+  let db = Msqlite.open_db name
+     
+  let add db tuple =  Msqlite.insert db tuple
+          
+  let query (db:t) (query: Config.tuple list) =   Msqlite.select db query
+
+  let to_list db = [] (* TODO *)
+     end;;*)  
 
 (* Moana GRAPH with SQLite as backend storage *)
 
