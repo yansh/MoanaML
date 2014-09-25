@@ -11,17 +11,18 @@
 * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-* OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+* OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  *)
 
 open Printf
 open Moana
 open Config   
 open Tests
+open OUnit2
     
 (* 
    List based storage
-*)
+*) 
   
 (*============= IMPLEMENTATION ================== *)
 
@@ -31,16 +32,17 @@ module LStore:STORE = struct
     
   let name = "List"
     
-  let db = []     
+  let db = []      
     
  let add storage tuple = storage @ [tuple] ;;
 
- (* TODO: Make it work *)
+(* TODO: Make it work *) 
 let  query (store:t) (q: Config.tuple list) =  
   match q with
   | [] -> print_endline "Done processing"; db
-  |  rule::rest_of_rules ->  
-    List.filter (fun y -> print_endline ("< " ^(to_string y) ^ " > checking rule...<" ^ (to_string rule) ^ " > ");  Config.compare rule y) store;;
+  |  rule::rest_of_rules -> 
+    List.filter (fun y -> print_endline ("< " ^(to_string y) ^ " > checking rule...<" ^ (to_string rule) ^ " > ");  
+      Config.compare rule y) store;;
       db;;
 
   let to_list db = db;;
@@ -138,7 +140,7 @@ let qry2 l =
     if join = [] then acc else tup1 :: join @ acc) l1 [];;
 
 
-
+ 
 
 (*============================== EXTRA ================================== *)
 (*print_endline "Running query, results ";;
