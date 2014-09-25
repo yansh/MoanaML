@@ -36,7 +36,7 @@ module type STORE =
         
       (* provide a garph-query as list of tuples and returns list of tuples    *)
       (* matching it                                                           *)
-      val query :  t -> Config.tuple list -> Config.tuple list
+      val query :  t -> Config.tuple list -> Config.tuple list list
         
       (* return stored graph as set of tuples *)
         
@@ -58,7 +58,7 @@ module type GRAPH =
     val add : ?g:t -> Config.tuple -> t
       
     (* specify a query as list of tuple, this will return a matching list of *)
-    val map : ?g:t -> Config.tuple list -> Config.tuple list       
+    val map : ?g:t -> Config.tuple list -> Config.tuple list list     
           
     val print: t  -> unit
       
