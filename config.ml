@@ -16,7 +16,6 @@ type t = string
 type 't element_type =
     Variable of string
   | Constant of 't
-  | Wildcard
 
 (* Mappings between the different sorts of data.
  * In this case, since both are represented as strings,
@@ -57,17 +56,17 @@ let print_tuples_list tuples =
   List.map (fun t ->print_tuples t) tuples;;
 
 
-let compare t1 t2 =
-  if t1.subj=t2.subj || t1.subj = Wildcard ||  t2.subj =  Wildcard then
+  (*let compare t1 t2 =
+  if t1.subj=t2.subj || t1.subj = Variable  ||  t2.subj =  Variable  then
         begin
-          if t1.pred=t2.pred || t1.pred= Wildcard || t2.pred = Wildcard then
-            if t1.obj=t2.obj || t1.obj= Wildcard || t2.obj = Wildcard then
+          if t1.pred=t2.pred || t1.pred= Variable || t2.pred = Variable then
+            if t1.obj=t2.obj || t1.obj= Variable || t2.obj = Variable then
                (print_endline "TRUE!"; true)
              else false
           else false
         end
       else
-     (print_endline "Finished FALSE"; false);;
+     (print_endline "Finished FALSE"; false);;*)
 
 
 
@@ -86,8 +85,7 @@ let execute_query (db : tuple list) (qry : tuple list) : tuple list list =
         if List.mem_assoc x var_scope then
           List.assoc x var_scope
         else s q
-    | Constant _ -> s q
-    | Wildcard -> failwith "Malformed query" in
+    | Constant _ -> s q in    
   (*Used to filter a part of a tuple record.
    * Returns a Boolean, indicating whether a match has occurred,
    * and possibly a variable-value pair (if we're matching against a variable)
@@ -104,8 +102,7 @@ let execute_query (db : tuple list) (qry : tuple list) : tuple list list =
        * a solution, we'll need to extent var_scope with
        * this mapping.*)
     | Variable x -> (true, Some (x, s v))
-    | Constant _ -> (s q = s v, None)
-    | Wildcard -> failwith "Malformed query" in
+    | Constant _ -> (s q = s v, None) in
   let make_query' ((var_scope, pre_soln) : ext_tuple) (q : tuple) : ext_tuple list =
     (*q' is a specialised version of q wrt the current pre_soln*)
     let q' =
