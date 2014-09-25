@@ -16,6 +16,8 @@
 
 
 open Config
+  
+open OUnit;;
 (* Compare the output results with expected results *)
 
 let check_test l  l1  =
@@ -231,9 +233,13 @@ print_endline "---- Unit tests ----- ";;
     }
      
 *)
-let test1 = (print_endline "Test 1") in 
+
+
+
+let test1 _ =  
   let query1 = [q1;q2] and q1_exp_res = [[t1;t9]] in
-  let res_q1 = execute_query tuples query1 in check_test q1_exp_res res_q1;; 
+  let res_q1 = execute_query tuples query1 in  assert_equal q1_exp_res res_q1;; 
+(*let test1 text_ctxt = assert_equal *) 
 (*print_tuples_list res_q1;;
  print_tuples_list q1_exp_res;;*)
 
@@ -245,13 +251,70 @@ let test1 = (print_endline "Test 1") in
      ?x, color, ?y
      ?y, type, Color
      ?y, rgbValue, White  
-    }
+    }test1
      
 *)
 
-let test2 = (print_endline "Test 2") in 
+let test2 _ = 
   let query2 = [q1;q3;q4;q5] and q2_exp_res = [[t1;t2;t5;t7]] in 
-let res_q2 = execute_query tuples query2 in check_test q2_exp_res res_q2 ;;
+     let res_q2 = execute_query tuples query2 in assert_equal q2_exp_res res_q2 ;;
+
+
 
 (*print_tuples_list res_q2;;
    print_tuples_list q2_exp_res;;*)
+
+(******* based on LUBM benchmark for SPARQL queries **** 
+ *  http://swat.cse.lehigh.edu/projects/lubm/queries-sparql.txt
+ *)
+(* TEST 3 :
+   
+MAP {
+  ?X type GraduateStudent,
+  ?X takesCourse GraduateCourse0}
+     
+*)
+
+
+(* TEST 4:
+   
+MAP  {    
+  X type GraduateStudent,
+  ?Y type University,
+  ?Z type Department,
+  ?X memberOf ?Z,
+  ?Z subOrganizationOf ?Y,
+  ?X undergraduateDegreeFrom ?Y 
+  }
+     
+*)
+
+(* TEST 5:
+   
+MAP  {    
+  ?X type ub:Student,
+  ?Y type ub:Faculty,
+  ?Z type ub:Course,
+  ?X advisor ?Y,
+  ?Y teacherOf ?Z,
+  ?X takesCourse ?Z,
+}
+     
+*)
+
+(* TEST 6:
+   
+ MAP  {    
+     ?x, relatesTo, ?y
+     ?y, relatesTo, ?x
+    }
+     
+*)
+let suite = 
+  "suite">::: 
+    ["test1">:: test1;
+     "test2">:: test2]
+    
+let _= run_test_tt_main suite   
+  
+  
