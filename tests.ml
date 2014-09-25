@@ -177,7 +177,22 @@ let t9 = {subj = Constant "a";
           time_stp =None;
           sign = None};;
 
-let tuples = [t1;t2;t3;t4;t5;t6;t7;t8;t9];;
+let t10 = {subj = Constant "d";
+          pred = Constant "relatesTo";
+          obj = Constant  "c";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+
+let t11 = {subj = Constant "c";
+          pred = Constant "relatesTo";
+          obj = Constant  "d";
+          ctxt = Constant "context";
+          time_stp =None;
+          sign = None};;
+
+
+let tuples = [t1;t2;t3;t4;t5;t6;t7;t8;t9;t10;t11];;
 
 (*Config.print_tuples tuples;;*)
 
@@ -220,6 +235,20 @@ let q5 = {subj = Variable "?y";
           sign = None};;
 
 
+let q6 = {subj = Variable "?y";
+          pred = Constant "relatesTo";
+          obj =  Variable "?x";
+          ctxt = Constant "context";
+          time_stp = None;
+          sign = None};;
+          
+let q7 = {subj = Variable "?x";
+          pred = Constant "relatesTo";
+          obj =  Variable "?y";
+          ctxt = Constant "context";
+          time_stp = None;
+          sign = None};;
+          
 (****************** TESTS **********************************)
 
    
@@ -238,8 +267,7 @@ print_endline "---- Unit tests ----- ";;
 
 let test1 _ =  
   let query1 = [q1;q2] and q1_exp_res = [[t1;t9]] in
-  let res_q1 = execute_query tuples query1 in  assert_equal q1_exp_res res_q1;; 
-(*let test1 text_ctxt = assert_equal *) 
+  let res_q1 = execute_query tuples query1 in  assert_equal q1_exp_res res_q1;;  
 (*print_tuples_list res_q1;;
  print_tuples_list q1_exp_res;;*)
 
@@ -260,14 +288,47 @@ let test2 _ =
      let res_q2 = execute_query tuples query2 in assert_equal q2_exp_res res_q2 ;;
 
 
+(* TEST 3: similar to test 1 query but the order of the tuple template is different
+   
+ MAP  {    
+     ?y, rgbValue, White
+     ?x, type, Car
+     ?x, color, ?y
+     ?y, type, Color  
+    }
+     
+*)
+
+let test3 _ = 
+  let query3 = [q5;q1;q3;q4] and q3_exp_res = [[t7;t1;t2;t5]] in 
+  let res_q3 = execute_query tuples query3  in  assert_equal q3_exp_res res_q3 ;;
+  
 
 (*print_tuples_list res_q2;;
    print_tuples_list q2_exp_res;;*)
 
+
+
+(* TEST 4: - Note - expected results are order sensetive
+   
+ MAP  {    
+     ?x, relatesTo, ?y
+     ?y, relatesTo, ?x
+    }
+     
+*)
+let test4 _ = 
+  let query4 = [q6;q7] and q4_exp_res = [[t11;t10];[t10;t11]] in 
+  let res_q4 = execute_query tuples query4 in assert_equal q4_exp_res res_q4 ;;
+
+
+
 (******* based on LUBM benchmark for SPARQL queries **** 
  *  http://swat.cse.lehigh.edu/projects/lubm/queries-sparql.txt
  *)
-(* TEST 3 :
+
+
+(* TEST  :
    
 MAP {
   ?X type GraduateStudent,
@@ -276,7 +337,7 @@ MAP {
 *)
 
 
-(* TEST 4:
+(* TEST :
    
 MAP  {    
   X type GraduateStudent,
@@ -289,7 +350,7 @@ MAP  {
      
 *)
 
-(* TEST 5:
+(* TEST :
    
 MAP  {    
   ?X type ub:Student,
@@ -302,18 +363,13 @@ MAP  {
      
 *)
 
-(* TEST 6:
-   
- MAP  {    
-     ?x, relatesTo, ?y
-     ?y, relatesTo, ?x
-    }
-     
-*)
+
 let suite = 
-  "suite">::: 
-    ["test1">:: test1;
-     "test2">:: test2]
+  "Unit tests">::: 
+    [ "test1">:: test1;
+      "test2">:: test2;
+      "test3">:: test3;
+      "test4">:: test4]
     
 let _= run_test_tt_main suite   
   
