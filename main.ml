@@ -114,26 +114,6 @@ end;;
 end;; 
 *)
 
-
-(* HARDCODED
-   
- MAP ?x {    
-     ?x type ?y
-     ?x color, Red   
-    }
-     
-*)
-let qry2 l =
-  let l1 = List.filter (fun tup ->
-    tup.pred = Constant "type") l in (* all elements of predicate type *)
-  let l2 = List.filter (fun tup ->
-    tup.pred = Constant "hasColor" && tup.obj = Constant "Red") l in (* all elements that have color Red *)
-  List.fold_right (fun tup1 acc ->
-    let join = List.filter (fun tup2 ->
-     tup1.subj = tup2.subj) l2 in
-    if join = [] then acc else tup1 :: join @ acc) l1 [];;
-
-
  
 
 (*============================== EXTRA ================================== *)
