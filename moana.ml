@@ -65,6 +65,7 @@ module type GRAPH =
   end;;
 
 
+
 (* Functor from STORE to GRAPH *)
 module Make(S: STORE):(GRAPH with type t = S.t) = struct      
     
