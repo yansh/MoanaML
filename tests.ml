@@ -20,7 +20,7 @@ open Config
 open OUnit;;
 (* Compare the output results with expected results *)
 
-let check_test l  l1  =
+(*let check_test l  l1  =
   let fl = List.flatten l and fl1 = List.flatten l1 in  
       let rec compare_list res exp_res = 
         match res, exp_res with
@@ -32,7 +32,7 @@ let check_test l  l1  =
       if c=true then 
         print_endline "PASS"
       else            
-        failwith "FAIL";;
+        failwith "FAIL";; *)
 
 (***************  TUPLES ***********************)
 
@@ -353,9 +353,9 @@ MAP  {
 (* TEST :
    
 MAP  {    
-  ?X type ub:Student,
-  ?Y type ub:Faculty,
-  ?Z type ub:Course,
+  ?X type Student,
+  ?Y type Faculty,
+  ?Z type Course,
   ?X advisor ?Y,
   ?Y teacherOf ?Z,
   ?X takesCourse ?Z,
@@ -363,13 +363,46 @@ MAP  {
      
 *)
 
+let test5 _ = 
+  let query5= q6 and q5_exp_res=[t10;t11] in
+  let res_q5 = filter query5 tuples in assert_equal q5_exp_res res_q5 ;;
+
+
+(*  test filter function *)
+
+let test6 _ =
+  let query6= q6 and q6_exp_res=[t10;t11] in
+  let res_q6 = filter query6  tuples in assert_equal q6_exp_res res_q6 ;;
+
+(* create alpha memory and add tuples to it *)
+let test7 _ =
+ let query7= q6 and q7_exp_res=[t10;t11] in
+  let am = create_alpha query7 [] in let new_am = add_to_alpha am tuples in assert_equal q7_exp_res new_am.tuples;;
+
+
+(* testing the mapping function *)
+let test8 _ =  
+  let query8= q6 and q8_exp_res=[("?y",1);("?x",3)] in
+  let m = mappings query8 in  assert_equal q8_exp_res  m;;
+(** for printing
+ *     let p=List.map (fun t -> 
+ *                match t with 
+ *                 s, p -> 
+ *                    (print_string s; print_string " "; print_int p;)
+ *                  ) m   
+ * *)  
+  
 
 let suite = 
   "Unit tests">::: 
     [ "test1">:: test1;
       "test2">:: test2;
       "test3">:: test3;
-      "test4">:: test4]
+      "test4">:: test4;
+      "test5">:: test5;
+      "test6">:: test6;
+      "test7">:: test7;
+      "test8">:: test8]
     
 let _= run_test_tt_main suite   
   
