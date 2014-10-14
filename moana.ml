@@ -34,17 +34,16 @@ module type STORE =
       (*val init_storage: unit*)
       val add : t -> Config.tuple -> t
         
-      (* provide a garph-query as list of tuples and returns list of tuples    *)
+      (* provide a graph query as list of tuples and returns list of tuples    *)
       (* matching it                                                           *)
       val query :  t -> Config.tuple list -> Config.tuple list list
         
       (* return stored graph as set of tuples *)
-        
       val to_list: t -> Config.tuple list
         
     end;;
   
-(* Signature for the Moana abstraction which will support many type of     *)
+(* Signature for the Moana abstraction which will support many types of    *)
 (* backend storage.                                                        *)
 module type GRAPH =
   sig
