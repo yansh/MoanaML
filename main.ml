@@ -60,12 +60,15 @@ module G:GRAPH = struct
           
   let map ?(g=graph)  (query: Config.tuple list) = LS.query g query;;
                  
-let print graph  =
+let to_string graph  =
     let dbList = LS.to_list graph in
-      let rec print_lst dbList = 
+      let rec string_lst dbList =
           match dbList with
-              | [] -> print_endline "Finished"
-              | head::rest -> print_endline (Config.to_string head); print_lst rest in print_lst dbList ;; 
+              | [] -> "Finished\n"
+              | head :: rest ->
+                Config.to_string head ^ "\n" ^
+                string_lst rest in
+    string_lst dbList ;;
             
 end;;
 

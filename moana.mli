@@ -50,7 +50,7 @@ sig
 	(* specify a query as list of tuple, this will return a matching list of *)
 	val map : ?g: t -> Config.tuple list -> Config.tuple list list
 	
-	val print: t -> unit
+	val to_string: t -> string
 
 end;;
 
@@ -73,7 +73,7 @@ module Make : functor (S: STORE) ->
 		
 		val map: ?g: t -> Config.tuple list -> Config.tuple list list;;
 		
-		val print: t -> unit
+		val to_string: t -> string
 	
 	end;;
 

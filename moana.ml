@@ -15,8 +15,6 @@
 * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 *)
 
-open Printf  
-  
 
 (* SIGNATURES *)
   
@@ -59,7 +57,7 @@ module type GRAPH =
     (* specify a query as list of tuple, this will return a matching list of *)
     val map : ?g:t -> Config.tuple list -> Config.tuple list list     
           
-    val print: t  -> unit
+    val to_string: t -> string
       
   end;;
 
@@ -73,7 +71,7 @@ module Make(S: STORE):(GRAPH with type t = S.t) = struct
   let graph = S.db
            
   let add ?(g=S.db) (tuple:Config.tuple) =       
-     let s= sprintf "Adding fact to %s" S.name in        
+     let s = Printf.sprintf "Adding fact to %s" S.name in
      print_endline s;
      S.add g tuple ;;
      
@@ -81,11 +79,14 @@ module Make(S: STORE):(GRAPH with type t = S.t) = struct
   let map ?(g=S.db) (query: Config.tuple list) = S.query g  query;;
 
 
-  let print graph  =
+  let to_string graph  =
     let dbList = S.to_list graph in
-      let rec print_lst dbList = 
+      let rec string_lst dbList =
           match dbList with
-              | [] -> print_endline "Finished"
-              | head::rest -> print_endline (Config.to_string head); print_lst rest in print_lst dbList ;;  
+              | [] -> "Finished\n"
+              | head :: rest ->
+                Config.to_string head ^ "\n" ^
+                string_lst rest in
+    string_lst dbList ;;
       
 end ;;
