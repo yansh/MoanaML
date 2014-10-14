@@ -16,12 +16,12 @@ module type STORE =
 sig
 	type t
 	
-	val db: t
+	val empty : t
 	
 	(* storage name *)
 	val name : string
 	
-	(* val init_storage: unit *)
+	val init : Config.tuple list -> t
 	val add : t -> Config.tuple -> t
 	
 	(* provide a graph query as list of tuples and returns list of tuples    *)
