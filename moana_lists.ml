@@ -8,7 +8,9 @@ module S : STORE = struct
 
   let name = "List store"
 
-  let db = []
+  let empty = []
+
+  let init tuples = tuples
 
   let add storage tuple = tuple :: storage
 
@@ -25,7 +27,7 @@ module G : GRAPH = struct
 
   type t = LS.t
 
-  let graph = LS.db
+  let graph = LS.empty
 
   let add ?(g = graph) (tuple : Config.tuple) =
     let s = Printf.sprintf "Adding fact to [ %s <- %s ]" LS.name (Config.to_string tuple) in
