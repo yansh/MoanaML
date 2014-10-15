@@ -16,25 +16,24 @@ module type STORE =
 sig
 	type t
 	
-	val db: t
+	val empty : t
 	
 	(* storage name *)
 	val name : string
 	
-	(* val init_storage: unit *)
+	val init : Config.tuple list -> t
 	val add : t -> Config.tuple -> t
 	
-	(* provide a garph-query as list of tuples and returns list of tuples    *)
+	(* provide a graph query as list of tuples and returns list of tuples    *)
 	(* matching it                                                           *)
 	val query : t -> Config.tuple list -> Config.tuple list list
 	
 	(* return stored graph as set of tuples *)
-	
 	val to_list: t -> Config.tuple list
 
 end;;
 
-(* Signature for the Moana abstraction which will support many type of     *)
+(* Signature for the Moana abstraction which will support many types of    *)
 (* backend storage.                                                        *)
 module type GRAPH =
 sig
@@ -44,13 +43,14 @@ sig
 	type t
 	
 	val graph: t
+
 	(* add fact as a tuple *)
 	val add : ?g: t -> Config.tuple -> t
 	
 	(* specify a query as list of tuple, this will return a matching list of *)
 	val map : ?g: t -> Config.tuple list -> Config.tuple list list
 	
-	val print: t -> unit
+	val to_string: t -> string
 
 end;;
 
@@ -60,8 +60,7 @@ end;;
 (* (string * int) list val tuples: t val create_filter: Config.tuple -> t  *)
 (* val add: Config.tuple -> t end;;                                        *)
 
-(* functor to create Moana graph from a give STORE implementation *)
-
+(* functor to create Moana graph from a given STORE implementation *)
 module Make : functor (S: STORE) ->
 
 	sig
@@ -74,7 +73,7 @@ module Make : functor (S: STORE) ->
 		
 		val map: ?g: t -> Config.tuple list -> Config.tuple list list;;
 		
-		val print: t -> unit
+		val to_string: t -> string
 	
 	end;;
 

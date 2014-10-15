@@ -15,8 +15,6 @@
 * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 *)
 
-open Printf  
-  
 
 (* SIGNATURES *)
   
@@ -25,26 +23,25 @@ module type STORE =
     sig
       type t 
         
-      val db: t
+      val empty : t
       
       (* storage name *)
       val name : string
         
         
-      (*val init_storage: unit*)
+      val init : Config.tuple list -> t
       val add : t -> Config.tuple -> t
         
-      (* provide a garph-query as list of tuples and returns list of tuples    *)
+      (* provide a graph query as list of tuples and returns list of tuples    *)
       (* matching it                                                           *)
       val query :  t -> Config.tuple list -> Config.tuple list list
         
       (* return stored graph as set of tuples *)
-        
       val to_list: t -> Config.tuple list
         
     end;;
   
-(* Signature for the Moana abstraction which will support many type of     *)
+(* Signature for the Moana abstraction which will support many types of    *)
 (* backend storage.                                                        *)
 module type GRAPH =
   sig
@@ -60,7 +57,7 @@ module type GRAPH =
     (* specify a query as list of tuple, this will return a matching list of *)
     val map : ?g:t -> Config.tuple list -> Config.tuple list list     
           
-    val print: t  -> unit
+    val to_string: t -> string
       
   end;;
 
@@ -71,22 +68,25 @@ module Make(S: STORE):(GRAPH with type t = S.t) = struct
     
   type t = S.t
     
-  let graph = S.db
+  let graph = S.empty
            
-  let add ?(g=S.db) (tuple:Config.tuple) =       
-     let s= sprintf "Adding fact to %s" S.name in        
+  let add ?(g = S.empty) (tuple : Config.tuple) =
+     let s = Printf.sprintf "Adding fact to %s" S.name in
      print_endline s;
      S.add g tuple ;;
      
           
-  let map ?(g=S.db) (query: Config.tuple list) = S.query g  query;;
+  let map ?(g = S.empty) (query : Config.tuple list) = S.query g query
 
 
-  let print graph  =
+  let to_string graph  =
     let dbList = S.to_list graph in
-      let rec print_lst dbList = 
+      let rec string_lst dbList =
           match dbList with
-              | [] -> print_endline "Finished"
-              | head::rest -> print_endline (Config.to_string head); print_lst rest in print_lst dbList ;;  
+              | [] -> "Finished\n"
+              | head :: rest ->
+                Config.to_string head ^ "\n" ^
+                string_lst rest in
+    string_lst dbList ;;
       
 end ;;

@@ -20,54 +20,6 @@ open Config
 open Tests
 open OUnit2
     
-(* 
-   List based storage
-*) 
-  
-(*============= IMPLEMENTATION ================== *)
-
-module LStore:STORE = struct
-  
-  type t = Config.tuple list
-    
-  let name = "List store"
-    
-  let db = []      
-    
-  let add storage tuple = storage @ [tuple] ;;
-
-  let  query (store:t) (q: Config.tuple list) =  execute_query store q
-
-  let to_list db = db;;
-
-end;;
-
-
-(* Moana GRAPH with List storage as a backend *)
-
-module G:GRAPH = struct    
-  
-  module LS = LStore
-    
-  type t = LS.t
-           
-  let graph = LS.db
-    
-  let add ?(g=graph) (tuple:Config.tuple) =       
-    let s= sprintf "Adding fact to [ %s <- %s ]" LS.name (Config.to_string tuple) in        
-    print_endline s;
-    LS.add g tuple ;;
-          
-  let map ?(g=graph)  (query: Config.tuple list) = LS.query g query;;
-                 
-let print graph  =
-    let dbList = LS.to_list graph in
-      let rec print_lst dbList = 
-          match dbList with
-              | [] -> print_endline "Finished"
-              | head::rest -> print_endline (Config.to_string head); print_lst rest in print_lst dbList ;; 
-            
-end;;
 
 (* SQLlite based backend storage *)
 
