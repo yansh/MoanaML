@@ -98,10 +98,10 @@ type am =
 		vars : (string * ((t element_type * tuple) list)) list
 	}
 
-let create_am p tuples = 
+let create_am p tuples_ = 
 	{pattern = p; 
-	 tuples = filter p tuples; 
-	 vars = if (List.length tuples > 0) then mappings p tuples else [] }
+	 tuples = filter p tuples_; 
+	 vars = if (List.length tuples_ > 0) then mappings p (filter p tuples_) else [] }
 
 (* BM contains (var, value, solution for the value *)
 type bm = { solutions : (string * (t element_type * tuple list) ) list }(*(((string * int) * tuple) list) list }*)
