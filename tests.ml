@@ -157,8 +157,6 @@ let q7 = { subj = Variable "?x";
 
 (****************** TESTS **********************************)
 
-(****************** TESTS **********************************)
-
    
 print_endline "---- Unit tests ----- ";;
 
@@ -289,19 +287,37 @@ let test6 _ =
 						| Constant x, t -> print_endline ""; print_string x;  print_endline (to_string t);
 						| Variable _, t-> print_string " ") values) am.vars in*) assert_equal q6_exp_res am.tuples;;
 
-(* test the join function *)		
+(* test simple join function AM with empty BM *)
+
 
 let test7 _ =     
-	let query7 = q6 and q7_exp_res ={solutions=[("?y",(Constant "a",[t1]));("?y",(Constant "a",[t2]));("?x",(Constant "Car",[t1]));("?x",(Constant "c",[t2]))]} in
-  let am = create_am query7 [t1;t2] in let bm = {solutions =[]} in 
+	let q7_exp_res ={solutions=[("?x",(Constant "a",[t1]))]} in
+  let am = create_am q1 tuples in let bm = {solutions =[]} in 
 	let new_bm =join am bm in 
-    (*let p =List.map (fun l -> (* (string * (t element_type * tuple list) ) *)						
+   (* let p =List.map (fun l -> (* (string * (t element_type * tuple list) ) *)						
 		match l with
 		| var, (value, tuples) -> print_endline var; print_value value;
               print_string "["; 
                         List.map (fun t -> print_string (to_string t)) tuples )   new_bm.solutions  
 												in *)  assert_equal new_bm q7_exp_res;; 
 
+(* TEST :
+ 
+Implement by create a combination of AM and BM
+ MAP {    
+     ?x, type, Car
+     ?x, hasColor, Red   
+    }
+*)
+let test8 _ =         
+  let am1 = create_am  q1 tuples and am2 = create_am q2 tuples and  q8_exp_res ={solutions=[("?x",(Constant "a",[t9;t1]))]} in let bm = {solutions =[]} in 
+    let res_bm =join am2 (join am1 bm) in 
+    (*let p =List.map (fun l -> (* (string * (t element_type * tuple list) ) *)                     
+        match l with
+        | var, (value, tuples) -> print_endline var; print_value value;
+              print_string "["; 
+                        List.map (fun t -> print_string (to_string t)) tuples ) res_bm.solutions in 
+												*)assert_equal res_bm  q8_exp_res;; 
 
 let suite =
 	"Unit tests" >:::
@@ -311,6 +327,7 @@ let suite =
 	"test4" >:: test4;
 	"test5" >:: test5;
 	"test6" >:: test6;
-	"test7" >:: test7;]
+	"test7" >:: test7;
+	"test8" >:: test8;]
 
 let _ = run_test_tt_main suite
