@@ -173,9 +173,12 @@ print_endline "---- Unit tests ----- ";;
 
 
 
-let test1 _ =  
-  let query1 = [q1;q2] and q1_exp_res = [[t1;t9]] in
-  let res_q1 = execute_query tuples query1 in  assert_equal q1_exp_res res_q1;;  
+let test1 _ =
+  let db = Moana_lists.S.init tuples in
+  let query1 = [q1;q2]
+  and q1_exp_res = [[t1;t9]] in
+  let res_q1 = Moana_lists.S.query db query1 in
+  assert_equal q1_exp_res res_q1;;
 (*print_tuples_list res_q1;;
  print_tuples_list q1_exp_res;;*)
 
@@ -277,6 +280,7 @@ let test5 _ =
   let res_q5 = filter query5 tuples in assert_equal q5_exp_res res_q5 ;;
 
 (* create alpha memory and add tuples to it *)
+<<<<<<< HEAD
 let test6 _ =
     let query6 = q6 and q6_exp_res =[t10;t11] in
     let am = create_am query6 tuples in (*let p = 
