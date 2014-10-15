@@ -280,7 +280,6 @@ let test5 _ =
   let res_q5 = filter query5 tuples in assert_equal q5_exp_res res_q5 ;;
 
 (* create alpha memory and add tuples to it *)
-<<<<<<< HEAD
 let test6 _ =
     let query6 = q6 and q6_exp_res =[t10;t11] in
     let am = create_am query6 tuples in (*let p = 
