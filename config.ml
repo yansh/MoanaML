@@ -237,11 +237,11 @@ let join am bm =
                                                in
                                                  (match sols with
                                                   | (bm_value, sol_tuples) ->
-                                                      (*print_endline "+-+";
-																												print_value bm_value;
-																												print_tuples sol_tuples;
-																												print_endline "-+-";
-																												print_string (to_string tuple);*)
+                                                (*print_endline "+-+";
+						print_value bm_value;
+						print_tuples sol_tuples;
+						print_endline "-+-";
+						print_string (to_string tuple);*)
                                                       [ (am_var,
                                                          (am_value,
                                                           (tuple ::
@@ -250,7 +250,7 @@ let join am bm =
                                am_values [])))
             am.vars [];
   }
-  
+ 
 (* ------------------------------------- HARDCODED QUEY MAP ?x { ?x type   *)
 (* ?y ?x color, Red }                                                      *)
 let qry2 l =

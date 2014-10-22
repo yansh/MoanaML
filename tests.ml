@@ -308,14 +308,7 @@ let test5 _ =
 let test6 _ =
   let query6 = q6 and q6_exp_res = [ t10; t11 ] in
   let am = create_am query6 tuples
-  in
-    (*let p = 
-		List.map (fun l -> match l with	  
-					| (var, values) -> print_string var; 
-					List.map (fun value -> match value with
-						| Constant x, t -> print_endline ""; print_string x;  print_endline (to_string t);
-						| Variable _, t-> print_string " ") values) am.vars in*)
-    assert_equal q6_exp_res am.tuples
+  in assert_equal q6_exp_res am.tuples
   
 (* test simple join function AM with empty BM *)
 let test7 _ =
@@ -323,14 +316,7 @@ let test7 _ =
   let am = create_am q1 tuples in
   let bm = { solutions = []; } in
   let new_bm = join am bm
-  in
-    (* let p =List.map (fun l -> (* (string * (t element_type * tuple list) ) *)						
-		match l with
-		| var, (value, tuples) -> print_endline var; print_value value;
-              print_string "["; 
-                        List.map (fun t -> print_string (to_string t)) tuples )   new_bm.solutions  
-												in *)
-    assert_equal new_bm q7_exp_res
+  in  assert_equal new_bm q7_exp_res
   
 (* TEST :
  
@@ -347,15 +333,7 @@ let test8 _ =
     { solutions = [ ("?x", ((Constant "a"), [ t9; t1 ])) ]; } in
   let bm = { solutions = []; } in
   let res_bm = join am2 (join am1 bm)
-  in
-    assert_equal
-      (*let p =List.map (fun l -> (* (string * (t element_type * tuple list) ) *)                     
-        match l with
-        | var, (value, tuples) -> print_endline var; print_value value;
-              print_string "["; 
-                        List.map (fun t -> print_string (to_string t)) tuples ) res_bm.solutions in 
-												*)
-      res_bm q8_exp_res
+  in assert_equal res_bm q8_exp_res
   
 (* TEST 2:
    
@@ -365,7 +343,6 @@ let test8 _ =
      ?y, type, Color
      ?y, rgbValue, White  
     }test1
-     [ t1; t2; t5; t7 ]
 *)
 let test9 _ =
   let q9_exp_res =
