@@ -87,8 +87,7 @@ let sel_arg arg pos =
   | (Constant _, _) -> None
   | (Variable var, pos) -> Some (var, pos)
   
-let mappings p tuples =
-  (* vars : (string * t element_type list) list for each tuple take the *)
+let mappings p tuples =  
   List.fold_right
     (fun e acc ->
        match e with
@@ -105,9 +104,10 @@ let mappings p tuples =
   
 type am =
   { tuples : tuple list; pattern : tuple;
-    vars : (string * (((t element_type) * tuple) list)) list
+	(* this is a mapping of Variables and their respective values in each tuple *)
+    vars : (string * (((t element_type) * tuple) list)) list 
   }
-
+(* helper to print the mappings *)
 let print_mappings am =
   List.map
     (fun l ->
@@ -136,6 +136,7 @@ let create_am p tuples_ =
 (* BM contains (var, value, solution for the value *)
 type bm = { solutions : (string * ((t element_type) * (tuple list))) list }
 
+(* helper to print BM *)
 let print_bm bm =
   List.map
     (fun l -> (* (string * (t element_type * tuple list) ) *)

@@ -12,13 +12,7 @@
 open Config
   
 open OUnit
-  
-(* Compare the output results with expected results *)
-(* let check_test l l1 = let fl = List.flatten l and fl1 = List.flatten l1 *)
-(* in let rec compare_list res exp_res = match res, exp_res with [], [] -> *)
-(* true | [], _ | _, [] -> false | h::t, h2::t2 -> h=h2 && compare_list t  *)
-(* t2 in let c = compare_list fl fl1 in if c=true then print_endline       *)
-(* "PASS" else failwith "FAIL";;                                           *)
+
 (***************  TUPLES ***********************)
 let t1 =
   {
@@ -335,14 +329,14 @@ let test8 _ =
   let res_bm = join am2 (join am1 bm)
   in assert_equal res_bm q8_exp_res
   
-(* TEST 2:
+(* TEST 2: 
    
  MAP  {    
      ?x, type, Car
      ?x, hasColor, ?y
      ?y, type, Color
      ?y, rgbValue, White  
-    }test1
+    }
 *)
 let test9 _ =
   let q9_exp_res =
