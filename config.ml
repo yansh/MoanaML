@@ -87,7 +87,7 @@ let sel_arg arg pos =
   | (Constant _, _) -> None
   | (Variable var, pos) -> Some (var, pos)
   
-let mappings p tuples =  
+let mappings p tuples =
   List.fold_right
     (fun e acc ->
        match e with
@@ -104,25 +104,24 @@ let mappings p tuples =
   
 type am =
   { tuples : tuple list; pattern : tuple;
-	(* this is a mapping of Variables and their respective values in each tuple *)
-    vars : (string * (((t element_type) * tuple) list)) list 
+    (* this is a mapping of Variables and their respective values in each tuple *)
+    vars : (string * (((t element_type) * tuple) list)) list
   }
+
 (* helper to print the mappings *)
 let print_mappings am =
   List.map
-    (fun l ->
-       match l with
-       | (var, values) ->
-           (print_string var;
-            List.map
-              (fun value ->
-                 match value with
-                 | (Constant x, t) ->
-                     (print_endline "";
-                      print_string x;
-                      print_endline (to_string t))
-                 | (Variable _, t) -> print_string " ")
-              values))
+    (fun (var, values) ->
+       (print_string var;
+        List.map
+          (fun value ->
+             match value with
+             | (Constant x, t) ->
+                 (print_endline "";
+                  print_string x;
+                  print_endline (to_string t))
+             | (Variable _, t) -> print_string " ")
+          values))
     am.vars
   
 let create_am p tuples_ =
@@ -139,14 +138,13 @@ type bm = { solutions : (string * ((t element_type) * (tuple list))) list }
 (* helper to print BM *)
 let print_bm bm =
   List.map
-    (fun l -> (* (string * (t element_type * tuple list) ) *)
-       match l with
-       | (var, (value, tuples)) ->
-           (print_endline "";
-            print_endline var;
-            print_value value;
-            print_string "[";
-            List.map (fun t -> print_string (to_string t)) tuples))
+    (fun (var, (value, tuples)) ->
+       (* (string * (t element_type * tuple list) ) *)
+       (print_endline "";
+        print_endline var;
+        print_value value;
+        print_string "[";
+        List.map (fun t -> print_string (to_string t)) tuples))
     bm.solutions
   
 (* joining BM and AM to create a new BM *)
@@ -156,91 +154,73 @@ let join am bm =
       match bm with
       | { solutions = [] } ->
           List.fold_right
-            (fun tpl acc -> (*string * ((t element_type * tuple) list)*)
-               match tpl with
-               | (var, values) -> (* am: (t element_type * tuple list) *)
-                   acc @
-                     (List.map
-                        (fun v ->
-                           match v with
-                           | (value, tuple) -> (var, (value, [ tuple ])))
-                        values))
+            (fun (var, values) acc ->
+               (*string * ((t element_type * tuple) list)*)
+               (* am: (t element_type * tuple list) *)
+               acc @
+                 (List.map (fun (value, tuple) -> (var, (value, [ tuple ])))
+                    values))
             am.vars []
       | { solutions = solutions } ->
           (* (string * (t element_type * tuple list) ) list * -- existing  *)
           (* solution                                                      *)
           List.fold_right (* string * ((t element_type * tuple) list) *)
             (* am: (t element_type * tuple) list) *)
-            (fun tpl acc ->
-               match tpl with
-               | (am_var, am_values) ->
-                   (try
-                      let sols = List.assoc am_var solutions
-                      in
-                        match sols with
-                        | (bm_value, sol_tuples) ->
-                            acc @
-                              (List.map
-                                 (fun v ->
-                                    match v with
-                                    | (am_value, tuple) ->
-                                        (am_var,
-                                         (bm_value, (tuple :: sol_tuples))))
-
-                                 (* filter tuples that have matching values *)
-                                 (* to corresponding variable               *)
-                                 (List.filter
-                                    (fun v1 ->
-                                       let (value, _) = v1
-                                       in value = bm_value)
-                                    am_values))
-                    with
-                    | (*In a nutshell, when a variable from an AM is not found in BM solution set *)
-                        (* we apply_ptrn to find values for other variable in the tuple. *)
-                        (* Eg., in case we have pattern ?x type ?y and ?x is not found in BM solutions *)
-                        (* the we check the value for ?y and see if ?y appears in the BM, if does we add the*)
-                        (*  tuple to the solution *) Not_found ->
-                        let apply_ptrn p tuple =
-                          List.fold_right
-                            (fun e acc ->
-                               match e with
-                               | Some (var, 1) ->
-                                   if var <> am_var
-                                   then
-                                     acc @ [ (var, ((tuple.subj), tuple)) ]
-                                   else acc
-                               | Some (var, 2) ->
-                                   if var <> am_var
-                                   then
-                                     acc @ [ (var, ((tuple.pred), tuple)) ]
-                                   else acc
-                               | Some (var, 3) ->
-                                   if var <> am_var
-                                   then acc @ [ (var, ((tuple.obj), tuple)) ]
-                                   else acc
-                               | Some (var, _) -> acc
-                               | None -> acc)
-                            [ sel_arg p.subj 1; sel_arg p.pred 2;
-                              sel_arg p.obj 3 ]
-                            []
-                        in
-                        acc @
-                        (List.fold_right
-                           (fun (am_value, tuple) acc1 ->
-                              List.fold_right
-                                (fun (var, (value, tuple)) acc2 ->
-                                   let (bm_value, sol_tuples) =
-                                     List.assoc var solutions
-                                   in
-                                   [ (am_var,
-                                      (am_value,
-                                       (tuple ::
-                                        sol_tuples))) ])
-                                (apply_ptrn am.pattern tuple) [])
-                           am_values [])))
+            (fun (am_var, am_values) acc ->
+               try
+                 let (bm_value, sol_tuples) = List.assoc am_var solutions
+                 in
+                   acc @
+                     (List.map
+                        (fun (am_value, tuple) ->
+                           (am_var, (bm_value, (tuple :: sol_tuples))))
+                        (* filter tuples that have matching values *)
+                        (* to corresponding variable               *)
+                        (List.filter (fun (value, _) -> value = bm_value)
+                           am_values))
+               with
+               | (*In a nutshell, when a variable from an AM is not found in BM solution set *)
+                   (* we apply_ptrn to find values for other variable in the tuple. *)
+                   (* Eg., in case we have pattern ?x type ?y and ?x is not found in BM solutions *)
+                   (* the we check the value for ?y and see if ?y appears in the BM, if does we add the*)
+                   (*  tuple to the solution *) 
+									Not_found ->
+                   let apply_ptrn p tuple =
+                     List.fold_right
+                       (fun e acc ->
+                          match e with
+                          | Some (var, 1) ->
+                              if var <> am_var
+                              then acc @ [ (var, ((tuple.subj), tuple)) ]
+                              else acc
+                          | Some (var, 2) ->
+                              if var <> am_var
+                              then acc @ [ (var, ((tuple.pred), tuple)) ]
+                              else acc
+                          | Some (var, 3) ->
+                              if var <> am_var
+                              then acc @ [ (var, ((tuple.obj), tuple)) ]
+                              else acc
+                          | Some (var, _) -> acc
+                          | None -> acc)
+                       [ sel_arg p.subj 1; sel_arg p.pred 2; sel_arg p.obj 3 ]
+                       []
+                   in
+                     acc @
+                       (List.fold_right
+                          (fun (am_value, tuple) acc1 ->
+                             List.fold_right
+                               (fun (var, (value, tuple)) acc2 ->
+                                  let (bm_value, sol_tuples) =
+                                    List.assoc var solutions
+                                  in
+                                    [ (am_var,
+                                       (am_value, (tuple :: sol_tuples))) ])
+                               (apply_ptrn am.pattern tuple) [])
+                          am_values []))
             am.vars [];
   }
- 
+  
 (* ------------------------------------- HARDCODED QUEY MAP ?x { ?x type   *)
 (* ?y ?x color, Red }                                                      *)
 let qry2 l =
