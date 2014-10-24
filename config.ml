@@ -224,31 +224,20 @@ let join am bm =
                               sel_arg p.obj 3 ]
                             []
                         in
-                          acc @
-                            (List.fold_right
-                               (fun v acc1 ->
-                                  match v with
-                                  | (am_value, tuple) ->
-                                      List.fold_right
-                                        (fun f acc2 ->
-                                           match f with
-                                           | (var, (value, tuple)) ->
-                                               let sols =
-                                                 List.assoc var solutions
-                                               in
-                                                 (match sols with
-                                                  | (bm_value, sol_tuples) ->
-                                                (*print_endline "+-+";
-						print_value bm_value;
-						print_tuples sol_tuples;
-						print_endline "-+-";
-						print_string (to_string tuple);*)
-                                                      [ (am_var,
-                                                         (am_value,
-                                                          (tuple ::
-                                                            sol_tuples))) ]))
-                                        (apply_ptrn am.pattern tuple) [])
-                               am_values [])))
+                        acc @
+                        (List.fold_right
+                           (fun (am_value, tuple) acc1 ->
+                              List.fold_right
+                                (fun (var, (value, tuple)) acc2 ->
+                                   let (bm_value, sol_tuples) =
+                                     List.assoc var solutions
+                                   in
+                                   [ (am_var,
+                                      (am_value,
+                                       (tuple ::
+                                        sol_tuples))) ])
+                                (apply_ptrn am.pattern tuple) [])
+                           am_values [])))
             am.vars [];
   }
  
