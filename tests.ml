@@ -347,12 +347,29 @@ let test9 _ =
   (*let p = print_mappings am2*)
   let res_bm = join am4 (join am3 (join am2 (join am1 { solutions = []; })))
   in (*let p = print_bm res_bm in *) assert_equal res_bm q9_exp_res
+	
+(* Tests for Irmin backed*)
+(* TEST 1:
+   
+ MAP {    
+     ?x, type, Car
+     ?x, hasColor, Red   
+    }
+     
+*)
+let test10 _ =
+  let db = Moana_irmin.S.init tuples in
+  let query10 = [ q1; q2 ] and q10_exp_res = [ [ t1; t9 ] ] in
+  let res_q10 = Moana_irmin.S.query db query10 in 
+	(*let p = print_tuples_list res_q10 in let p1 = print_tuples_list q10_exp_resin*)
+	 assert_equal q10_exp_res res_q10	
   
 let suite =
   "Unit tests" >:::
     [ "test1" >:: test1; "test2" >:: test2; "test3" >:: test3;
       "test4" >:: test4; "test5" >:: test5; "test6" >:: test6;
-      "test7" >:: test7; "test8" >:: test8; "test9" >:: test9 ]
+      "test7" >:: test7; "test8" >:: test8; "test9" >:: test9; 
+			"test10">:: test10]
   
 let _ = run_test_tt_main suite
   
