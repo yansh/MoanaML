@@ -1,3 +1,5 @@
+open Yojson
+  
 exception Wrong_tuple
   
 exception Wrong_template
@@ -31,8 +33,8 @@ type tuple =
 
 type db
 
-let to_string t =
-  match t with
+let to_string =
+  function
   | {
       subj = Constant s;
       pred = Constant p;
@@ -41,6 +43,44 @@ let to_string t =
       time_stp = _;
       sign = _ } -> Printf.sprintf "< %s %s %s >" s p o
   | _ -> "Not printing this tuple."
+  
+let value_to_str = function | Variable x -> x | Constant x -> x
+  
+(* FIX ME: Need to take care of Context, Signature and Timestamp *)
+let to_json t =
+  function
+  | {
+      subj = Constant s;
+      pred = Constant p;
+      obj = Constant o;
+      ctxt = Constant c;
+      time_stp = _;
+      sign = _ } ->
+      let t_json : Yojson.Basic.json =
+        `Assoc
+          [ ("Subject", (`String s)); ("Predicate", (`String p));
+            ("Object", (`String o)) ]
+      in t_json
+  | _ -> assert false
+  
+(* create tuple from JSON *)
+let from_json json_t =
+  (* FIX ME: Need to take care of Context, Signature and Timestamp *)
+  let open Yojson.Basic.Util
+  in
+    let json = Yojson.Basic.from_string json_t in
+    let s = json |> (member "Subject") in
+    let p = json |> (member "Predicate") in
+    let o = json |> (member "Object")
+    in
+      {
+        subj = Constant (Basic.Util.to_string s);
+        pred = Constant (Basic.Util.to_string p);
+        obj = Constant (Basic.Util.to_string o);
+        ctxt = Constant "context";
+        time_stp = None;
+        sign = None;
+      }
   
 let print_value =
   function
@@ -174,6 +214,7 @@ let join am bm =
                      (List.map
                         (fun (am_value, tuple) ->
                            (am_var, (bm_value, (tuple :: sol_tuples))))
+
                         (* filter tuples that have matching values *)
                         (* to corresponding variable               *)
                         (List.filter (fun (value, _) -> value = bm_value)
@@ -183,8 +224,7 @@ let join am bm =
                    (* we apply_ptrn to find values for other variable in the tuple. *)
                    (* Eg., in case we have pattern ?x type ?y and ?x is not found in BM solutions *)
                    (* the we check the value for ?y and see if ?y appears in the BM, if does we add the*)
-                   (*  tuple to the solution *) 
-									Not_found ->
+                   (*  tuple to the solution *) Not_found ->
                    let apply_ptrn p tuple =
                      List.fold_right
                        (fun e acc ->
