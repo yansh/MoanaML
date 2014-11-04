@@ -261,6 +261,19 @@ let join am bm =
             am.vars [];
   }
   
+
+
+(* takes a list of AMs and joins them *)
+
+ let execute_am_list ams =
+	let empty_bm = { solutions = [] } in
+	 List.fold_right (fun am acc -> 
+			join am acc
+		) ams  empty_bm
+		 
+		
+
+	
 (* ------------------------------------- HARDCODED QUEY MAP ?x { ?x type   *)
 (* ?y ?x color, Red }                                                      *)
 let qry2 l =
