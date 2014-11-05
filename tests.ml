@@ -349,7 +349,7 @@ let test9 _ =
   in (*let p = print_bm res_bm in *) assert_equal res_bm q9_exp_res
 	
 
-(* TEST 9: 
+(* TEST 9': 
    
  MAP  {    
      ?x, type, Car
@@ -363,11 +363,38 @@ let test9' _ =
     { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; } in
   let am1 = create_am q1 tuples and am2 = create_am q3 tuples
 
-  and am3 = create_am q4 tuples and am4 = create_am q5 tuples in let am_list = [am1;am2;am3;am4] in
+  and am3 = create_am q4 tuples and am4 = create_am q5 tuples in 
+	let am_list = [am1;am2;am3;am4] in
   (*let p = print_mappings am2*)
   let res_bm = execute_am_list (List.rev am_list)
   in (*let p = print_bm res_bm in *) assert_equal res_bm q9'_exp_res
+
 	
+(*** TEST 9'': 
+   
+Accepts list of AM and create Rete network. The last BM in the network contains 
+the matching tuples to the query: 
+ 
+ MAP  {    
+     ?x, type, Car
+     ?x, hasColor, ?y
+     ?y, type, Color
+     ?y, rgbValue, White  
+    }
+***)
+
+let test9'' _ =
+  let q9''_exp_res =
+    { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; } in
+  let am1 = create_am q1 tuples and am2 = create_am q3 tuples
+
+  and am3 = create_am q4 tuples and am4 = create_am q5 tuples in 
+	let am_list = [am1;am2;am3;am4] in
+  (*let p = print_mappings am2*)
+  let res_rete_network =  rete (am_list) in 
+	let Node(_, res_bm, _)  =res_rete_network 
+  (*in let p = print_bm res_bm *)in  assert_equal res_bm q9''_exp_res
+			
 (* Tests for Irmin backed*)
 
 (* TEST 10:
@@ -398,7 +425,8 @@ let suite =
   "Unit tests" >:::
     [ "test1" >:: test1; "test2" >:: test2; "test3" >:: test3;
       "test4" >:: test4; "test5" >:: test5; "test6" >:: test6;
-      "test7" >:: test7; "test8" >:: test8; "test9" >:: test9; "test9'" >:: test9';  
+      "test7" >:: test7; "test8" >:: test8; "test9" >:: test9; 
+			"test9'" >:: test9';"test9''" >:: test9'';  
 			"test10">:: test10; "test11">:: test11]
   
 let _ = run_test_tt_main suite

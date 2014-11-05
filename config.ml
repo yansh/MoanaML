@@ -261,33 +261,25 @@ let join am bm =
             am.vars [];
   }
   
-(** returns a list of (am, bm), where the hd of the list 
-contains the BM with matching tu query tuples **)
- 
+type rete_dataflow = | Empty | Node of am * bm * rete_dataflow
+
 let rete ams =
-	let first_am = List.hd ams in	       
-    let empty_bm = { solutions = [] } in
-		let tail = List.tl ams in
-		(*let p = print_bm (join first_am empty_bm)in let p1= print_endline "+++" in*)
-     List.fold_right (fun am acc ->		
-			let _, prev_bm = List.hd (acc) in
-			(*let ap = (print_endline "prev AM";print_mappings prev_am) *)
-			(* and ap2 = (print_endline "AM"; print_mappings am) in
-			let p =  print_endline ">>" and p1= print_bm (join am prev_bm) and p2= print_endline "<<" in*)
-            (am, join am prev_bm)::acc
-        ) (List.rev tail)   [(first_am, join first_am empty_bm)]
-					
-
+  let first_am = List.hd ams in
+  let empty_bm = { solutions = []; } in
+  let tail = List.tl ams in
+  (*let p = print_bm (join first_am empty_bm)in let p1= print_endline "+++" in*)
+  let res_list =
+    List.fold_right
+      (fun am acc ->
+         let (_, prev_bm) = List.hd acc in (am, (join am prev_bm)) :: acc)
+      (List.rev tail) [ (first_am, (join first_am empty_bm)) ]
+  in List.fold_right (fun (am, bm) acc -> Node (am, bm, acc)) res_list Empty
+  
 (* takes a list of AMs and joins them *)
- let execute_am_list ams =
-	let empty_bm = { solutions = [] } in
-	 List.fold_right (fun am acc -> 
-			join am acc
-		) ams  empty_bm
-		 
-		
-
-	
+let execute_am_list ams =
+  let empty_bm = { solutions = []; }
+  in List.fold_right (fun am acc -> join am acc) ams empty_bm
+  
 (* ------------------------------------- HARDCODED QUEY MAP ?x { ?x type   *)
 (* ?y ?x color, Red }                                                      *)
 let qry2 l =
