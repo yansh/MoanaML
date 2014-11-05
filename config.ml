@@ -138,7 +138,7 @@ let mappings p tuples =
        | (*acc @ [(var, List.map (fun t ->  print_value t.pred; t.pred) tuples)]*)
            Some (var, 3) ->
            acc @ [ (var, (List.map (fun t -> ((t.obj), t)) tuples)) ]
-       | Some (var, _) -> acc
+       | Some (_, _) -> acc
        | None -> acc)
     [ sel_arg p.subj 1; sel_arg p.pred 2; sel_arg p.obj 3 ] []
   
@@ -160,7 +160,7 @@ let print_mappings am =
                  (print_endline "";
                   print_string x;
                   print_endline (to_string t))
-             | (Variable _, t) -> print_string " ")
+             | (Variable _, _) -> print_string " ")
           values))
     am.vars
   
@@ -212,7 +212,7 @@ let join am bm =
                  in
                    acc @
                      (List.map
-                        (fun (am_value, tuple) ->
+                        (fun (_, tuple) ->
                            (am_var, (bm_value, (tuple :: sol_tuples))))
 
                         (* filter tuples that have matching values *)
@@ -241,17 +241,17 @@ let join am bm =
                               if var <> am_var
                               then acc @ [ (var, ((tuple.obj), tuple)) ]
                               else acc
-                          | Some (var, _) -> acc
+                          | Some (_, _) -> acc
                           | None -> acc)
                        [ sel_arg p.subj 1; sel_arg p.pred 2; sel_arg p.obj 3 ]
                        []
                    in
                      acc @
                        (List.fold_right
-                          (fun (am_value, tuple) acc1 ->
+                          (fun (am_value, tuple) _ ->
                              List.fold_right
-                               (fun (var, (value, tuple)) acc2 ->
-                                  let (bm_value, sol_tuples) =
+                               (fun (var, (_, tuple)) _ ->
+                                  let (_, sol_tuples) =
                                     List.assoc var solutions
                                   in
                                     [ (am_var,
@@ -261,10 +261,24 @@ let join am bm =
             am.vars [];
   }
   
-
+(** returns a list of (am, bm), where the hd of the list 
+contains the BM with matching tu query tuples **)
+ 
+let rete ams =
+	let first_am = List.hd ams in	       
+    let empty_bm = { solutions = [] } in
+		let tail = List.tl ams in
+		(*let p = print_bm (join first_am empty_bm)in let p1= print_endline "+++" in*)
+     List.fold_right (fun am acc ->		
+			let _, prev_bm = List.hd (acc) in
+			(*let ap = (print_endline "prev AM";print_mappings prev_am) *)
+			(* and ap2 = (print_endline "AM"; print_mappings am) in
+			let p =  print_endline ">>" and p1= print_bm (join am prev_bm) and p2= print_endline "<<" in*)
+            (am, join am prev_bm)::acc
+        ) (List.rev tail)   [(first_am, join first_am empty_bm)]
+					
 
 (* takes a list of AMs and joins them *)
-
  let execute_am_list ams =
 	let empty_bm = { solutions = [] } in
 	 List.fold_right (fun am acc -> 
