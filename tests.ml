@@ -23,7 +23,7 @@ let t1 =
     time_stp = None;
     sign = None;
   }
-  
+	
 let t2 =
   {
     subj = Constant "a";
@@ -123,8 +123,48 @@ let t11 =
     time_stp = None;
     sign = None;
   }
-  
-let tuples = [ t1; t2; t3; t4; t5; t6; t7; t8; t9; t10; t11 ]
+
+let t12 =
+  {
+    subj = Constant "d";
+    pred = Constant "type";
+    obj = Constant "Car";
+    ctxt = Constant "context";
+    time_stp = None;
+    sign = None;
+  }
+
+let t13 =
+  {
+    subj = Constant "d";
+    pred = Constant "hasColor";
+    obj = Constant "c2";
+    ctxt = Constant "context";
+    time_stp = None;
+    sign = None;
+  }
+      
+let t14 =
+  {
+    subj = Constant "c2";
+    pred = Constant "type";
+    obj = Constant "Color";
+    ctxt = Constant "context";
+    time_stp = None;
+    sign = None;
+  } 
+
+let t15 =
+  {
+    subj = Constant "c2";
+    pred = Constant "rgbValue";
+    obj = Constant "White";
+    ctxt = Constant "context";
+    time_stp = None;
+    sign = None;
+  }     
+	  
+let tuples = [ t1; t2; t3; t4; t5; t6; t7; t8; t9; t10; t11]
   
 (* Config.print_tuples tuples;; *)
 (*************** QUERY TEMPLATE TUPLES *******************)
@@ -177,7 +217,17 @@ let q5 =
     time_stp = None;
     sign = None;
   }
-  
+
+let q5' =
+  {
+    subj = Variable "?y";
+    pred = Constant "rgbValue";
+    obj =  Variable "?c";
+    ctxt = Constant "context";
+    time_stp = None;
+    sign = None;
+  }
+  	  
 let q6 =
   {
     subj = Variable "?y";
@@ -201,7 +251,7 @@ let q7 =
 (****************** TESTS **********************************)
 let _ = print_endline "---- Unit tests ----- "
   
-(* TEST 1:
+(* TEST 0:
    
  MAP {    
      ?x, type, Car
@@ -209,15 +259,15 @@ let _ = print_endline "---- Unit tests ----- "
     }
      
 *)
-let test1 _ =
+let test0 _ =
   let db = Moana_lists.S.init tuples in
-  let query1 = [ q1; q2 ] and q1_exp_res = [ [ t1; t9 ] ] in
-  let res_q1 = Moana_lists.S.query db query1
-  in assert_equal q1_exp_res res_q1
+  let query = [ q1; q2 ] and q_exp_res = [ [ t1; t9 ] ] in
+  let res_q = Moana_lists.S.query db query
+  in assert_equal q_exp_res res_q
   
 (*print_tuples_list res_q1;;
  print_tuples_list q1_exp_res;;*)
-(* TEST 2:
+(* TEST 1:
    
  MAP  {    
      ?x, type, Car
@@ -227,11 +277,11 @@ let test1 _ =
     }test1
      
 *)
-let test2 _ =
-  let query2 = [ q1; q3; q4; q5 ] and q2_exp_res = [ [ t1; t2; t5; t7 ] ] in
-  let res_q2 = execute_query tuples query2 in assert_equal q2_exp_res res_q2
+let test1 _ =
+  let query = [ q1; q3; q4; q5 ] and q_exp_res = [ [ t1; t2; t5; t7 ] ] in
+  let res_q = execute_query tuples query in assert_equal q_exp_res res_q
   
-(* TEST 3: similar to test 1 query but the order of the tuple template is different
+(* TEST 2: similar to test 1 query but the order of the tuple template is different
    
  MAP  {    
      ?y, rgbValue, White
@@ -241,13 +291,13 @@ let test2 _ =
     }
      
 *)
-let test3 _ =
-  let query3 = [ q5; q1; q3; q4 ] and q3_exp_res = [ [ t7; t1; t2; t5 ] ] in
-  let res_q3 = execute_query tuples query3 in assert_equal q3_exp_res res_q3
+let test2 _ =
+  let query = [ q5; q1; q3; q4 ] and q_exp_res = [ [ t7; t1; t2; t5 ] ] in
+  let res_q = execute_query tuples query in assert_equal q_exp_res res_q
   
-(*print_tuples_list res_q2;;
+(*
    print_tuples_list q2_exp_res;;*)
-(* TEST 4: - Note - expected results are order sensetive
+(* TEST 3: - Note - expected results are order sensetive
    
  MAP  {    
      ?x, relatesTo, ?y
@@ -255,9 +305,9 @@ let test3 _ =
     }
      
 *)
-let test4 _ =
-  let query4 = [ q6; q7 ] and q4_exp_res = [ [ t11; t10 ]; [ t10; t11 ] ] in
-  let res_q4 = execute_query tuples query4 in assert_equal q4_exp_res res_q4
+let test3 _ =
+  let query = [ q6; q7 ] and q_exp_res = [ [ t11; t10 ]; [ t10; t11 ] ] in
+  let res_q = execute_query tuples query in assert_equal q_exp_res res_q
   
 (******* based on LUBM benchmark for SPARQL queries **** 
  *  http://swat.cse.lehigh.edu/projects/lubm/queries-sparql.txt
@@ -294,23 +344,23 @@ MAP  {
      
 *)
 (*  test filter function *)
-let test5 _ =
-  let query5 = q6 and q5_exp_res = [ t10; t11 ] in
-  let res_q5 = filter query5 tuples in assert_equal q5_exp_res res_q5
+let test4 _ =
+  let query = q6 and q_exp_res = [ t10; t11 ] in
+  let res_q = filter query tuples in assert_equal q_exp_res res_q
   
 (* create alpha memory and add tuples to it *)
-let test6 _ =
-  let query6 = q6 and q6_exp_res = [ t10; t11 ] in
-  let am = create_am query6 tuples
-  in assert_equal q6_exp_res am.tuples
+let test5 _ =
+  let query = q6 and q_exp_res = [ t10; t11 ] in
+  let am = create_am query tuples
+  in assert_equal q_exp_res am.tuples
   
 (* test simple join function AM with empty BM *)
-let test7 _ =
-  let q7_exp_res = { solutions = [ ("?x", ((Constant "a"), [ t1 ])) ]; } in
+let test6 _ =
+  let q_exp_res = { solutions = [ ("?x", ((Constant "a"), [ t1 ])) ]; } in
   let am = create_am q1 tuples in
   let bm = { solutions = []; } in
   let new_bm = join am bm
-  in  assert_equal new_bm q7_exp_res
+  in  assert_equal new_bm q_exp_res
   
 (* TEST :
  
@@ -320,16 +370,15 @@ Implement by create a combination of AM and BM
      ?x, hasColor, Red   
     }
 *)
-let test8 _ =
+let test7 _ =
   let am1 = create_am q1 tuples and am2 = create_am q2 tuples
-
-  and q8_exp_res =
+  and q_exp_res =
     { solutions = [ ("?x", ((Constant "a"), [ t9; t1 ])) ]; } in
   let bm = { solutions = []; } in
   let res_bm = join am2 (join am1 bm)
-  in assert_equal res_bm q8_exp_res
+  in assert_equal res_bm q_exp_res
   
-(* TEST 9: 
+(* TEST 8: 
    
  MAP  {    
      ?x, type, Car
@@ -338,18 +387,20 @@ let test8 _ =
      ?y, rgbValue, White  
     }
 *)
-let test9 _ =
-  let q9_exp_res =
-    { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; } in
-  let am1 = create_am q1 tuples and am2 = create_am q3 tuples
+let test8 _ =
+	let exd_tuples = [t12; t13; t14; t15] @ tuples in
+  let q_exp_res =
+    { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ;("?y", ((Constant "c2"), 
+		[ t15; t14; t13; t12])) ]; } in
+  let am1 = create_am q1 exd_tuples and am2 = create_am q3 exd_tuples
 
-  and am3 = create_am q4 tuples and am4 = create_am q5 tuples in
+  and am3 = create_am q4 exd_tuples and am4 = create_am q5 exd_tuples in
   (*let p = print_mappings am2*)
   let res_bm = join am4 (join am3 (join am2 (join am1 { solutions = []; })))
-  in (*let p = print_bm res_bm in *) assert_equal res_bm q9_exp_res
+  (*in let p = print_bm res_bm*) in  assert_equal res_bm q_exp_res
 	
 
-(* TEST 9': 
+(* TEST 8': 
    
  MAP  {    
      ?x, type, Car
@@ -358,19 +409,18 @@ let test9 _ =
      ?y, rgbValue, White  
     }
 *)
-let test9' _ =
-  let q9'_exp_res =
+let test8' _ =
+  let q_exp_res =
     { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; } in
   let am1 = create_am q1 tuples and am2 = create_am q3 tuples
-
   and am3 = create_am q4 tuples and am4 = create_am q5 tuples in 
 	let am_list = [am1;am2;am3;am4] in
   (*let p = print_mappings am2*)
   let res_bm = execute_am_list (List.rev am_list)
-  in (*let p = print_bm res_bm in *) assert_equal res_bm q9'_exp_res
+  in (*let p = print_bm res_bm in *) assert_equal res_bm q_exp_res
 
 	
-(*** TEST 9'': 
+(*** TEST 8'': 
    
 Accepts list of AM and create Rete network. The last BM in the network contains 
 the matching tuples to the query: 
@@ -383,21 +433,20 @@ the matching tuples to the query:
     }
 ***)
 
-let test9'' _ =
-  let q9''_exp_res =
+let test8'' _ =
+  let q_exp_res =
     { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; } in
   let am1 = create_am q1 tuples and am2 = create_am q3 tuples
-
   and am3 = create_am q4 tuples and am4 = create_am q5 tuples in 
 	let am_list = [am1;am2;am3;am4] in
   (*let p = print_mappings am2*)
   let res_rete_network =  rete (am_list) in 
-	let Node(_, res_bm, _)  =res_rete_network 
-  (*in let p = print_bm res_bm *)in  assert_equal res_bm q9''_exp_res
+	let Node(_, res_bm, _)  = execute_rete res_rete_network 
+  (*in let p = print_bm res_bm*) in  assert_equal res_bm q_exp_res
 			
 (* Tests for Irmin backed*)
 
-(* TEST 10:
+(* TEST 9:
    
  MAP {    
      ?x, type, Car
@@ -405,29 +454,56 @@ let test9'' _ =
     }
      
 *)
-let test10 _ =
+let test9 _ =
   let db = Moana_irmin.S.init tuples in
   let query10 = [ q1; q2 ] and q10_exp_res = [ [ t1; t9 ] ] in
   let res_q10 = Moana_irmin.S.query db query10 in 
 	(*let p = print_tuples_list res_q10 in let p1 = print_tuples_list q10_exp_resin*)
 	 assert_equal q10_exp_res res_q10	
 
-(* Test 11 *)
+(* Test 10 *)
 (* Tests the add function and to_list function*)
 
-let test11 _ =
+let test10 _ =
   let db = Moana_irmin.S.init [t1; t2] in
   let exp_res11 = [t1; t2; t3] in
   let res11 = Moana_irmin.S.add db t3 in     
      assert_equal exp_res11 (Moana_irmin.S.to_list res11)   
+
+    
+(*** TEST 10'': 
+   
+Accepts list of AM and create Rete network. The last BM in the network contains 
+the matching tuples to the query: 
+ 
+ MAP  {    
+     ?x, type, Car
+     ?x, hasColor, ?y
+     ?y, type, Color
+     ?y, rgbValue, White
+    }
+***)
+
+(*let test10'' _ =
+  let q_exp_res =
+    { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; } in
+  let am1 = create_am q1 tuples and am2 = create_am q3 tuples
+
+  and am3 = create_am q4 tuples and am4 = create_am q5 tuples in 
+    let am_list = [am1;am2;am3;am4] in
+  (*let p = print_mappings am2*)
+  let res_rete_network =  rete (am_list) in 
+    let Node(_, res_bm, _)  = execute_rete res_rete_network 
+  in let p = print_bm res_bm in  assert_equal res_bm q_exp_res*)
+            				
 		
 let suite =
   "Unit tests" >:::
-    [ "test1" >:: test1; "test2" >:: test2; "test3" >:: test3;
-      "test4" >:: test4; "test5" >:: test5; "test6" >:: test6;
-      "test7" >:: test7; "test8" >:: test8; "test9" >:: test9; 
-			"test9'" >:: test9';"test9''" >:: test9'';  
-			"test10">:: test10; "test11">:: test11]
+    [ "test0" >:: test0; "test1" >:: test1; "test2" >:: test2;
+      "test3" >:: test3; "test4" >:: test4; "test5" >:: test5;
+      "test6" >:: test6; "test7" >:: test7; "test8" >:: test8; 
+			"test8'" >:: test8';"test8''" >:: test8'';
+			"test10">:: test10;]
   
 let _ = run_test_tt_main suite
   
