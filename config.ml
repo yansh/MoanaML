@@ -4,6 +4,8 @@ exception Wrong_tuple
   
 exception Wrong_template
   
+exception AM_not_found
+  
 type obj_t = string
 
 type context = string
@@ -113,7 +115,7 @@ let print_tuples_list tuples = List.map (fun t -> print_tuples t) tuples
 (* helper to filter tuples list to form the pattern *)
 let filter ptrn tuples =
   let cmp p_attr t_attr =
-    match p_attr with | Variable v -> true | Constant _ -> p_attr = t_attr
+    match p_attr with | Variable _ -> true | Constant _ -> p_attr = t_attr
   in
     List.filter
       (fun t ->
@@ -208,17 +210,26 @@ let join am bm =
             (* am: (t element_type * tuple) list) *)
             (fun (am_var, am_values) acc ->
                try
-                 let (bm_value, sol_tuples) = List.assoc am_var solutions
-                 in
-                   acc @
-                     (List.map
-                        (fun (_, tuple) ->
-                           (am_var, (bm_value, (tuple :: sol_tuples))))
-
+                 let (bm_value, _) = List.assoc am_var solutions in
+                 (* filter all the solutions assoc with the variable *)
+                 let sol_list =
+                   List.filter (fun (bm_var, _) -> bm_var = am_var) solutions in
+                 let sol =
+                   List.fold_right
+                     (fun (_, (bm_value, sol_tuples)) acc_f ->
                         (* filter tuples that have matching values *)
                         (* to corresponding variable               *)
-                        (List.filter (fun (value, _) -> value = bm_value)
-                           am_values))
+                        let fltr_list =
+                          List.filter (fun (value, _) -> value = bm_value)
+                            am_values
+                        in
+                          acc_f @
+                            (List.map
+                               (fun (_, tuple) ->
+                                  (am_var, (bm_value, (tuple :: sol_tuples))))
+                               fltr_list))
+                     sol_list []
+                 in sol
                with
                | (*In a nutshell, when a variable from an AM is not found in BM solution set *)
                    (* we apply_ptrn to find values for other variable in the tuple. *)
@@ -248,19 +259,36 @@ let join am bm =
                    in
                      acc @
                        (List.fold_right
-                          (fun (am_value, tuple) _ ->
-                             List.fold_right
-                               (fun (var, (_, tuple)) _ ->
-                                  let (_, sol_tuples) =
-                                    List.assoc var solutions
-                                  in
-                                    [ (am_var,
-                                       (am_value, (tuple :: sol_tuples))) ])
-                               (apply_ptrn am.pattern tuple) [])
+                          (fun (am_value, tuple) acc1 ->
+                             acc1 @
+                               (List.fold_right
+                                  (fun (var, (value, tuple)) acc2 ->
+                                     (* filter all the solutions assoc with the variable *)
+                                     let sol_list =
+                                       List.filter
+                                         (fun
+                                            (bm_var, (bm_value, sol_tuples))
+                                            ->
+                                            (bm_var = var) &&
+                                              (bm_value = value))
+                                         solutions
+                                     in
+                                       List.map
+                                         (fun
+                                            (bm_var, (bm_value, sol_tuples))
+                                            ->
+                                            (am_var,
+                                             (am_value,
+                                              (tuple :: sol_tuples))))
+                                         sol_list)
+                                  (apply_ptrn am.pattern tuple) []))
                           am_values []))
             am.vars [];
   }
   
+(*in
+  let p = print_endline "BM-->" in
+  let p2 = print_bm b in let p = print_endline "<---" in b*)
 type rete_dataflow = | Empty | Node of am * bm * rete_dataflow
 
 let rete ams =
@@ -275,28 +303,56 @@ let rete ams =
       (List.rev tail) [ (first_am, (join first_am empty_bm)) ]
   in List.fold_right (fun (am, bm) acc -> Node (am, bm, acc)) res_list Empty
   
+(*** generate a list of (AM, ref rete_node) pairs ***)
+let rec mk_refs rete_network acc =
+  match rete_network with
+  | Node (am, _, node) -> (am, (ref rete_network)) :: (mk_refs node acc)
+  | Empty -> acc
+  
+(** add tuple to an existing AM **)
+(* FIX ME: remove AM from the parameters, replace by matching tuple to the AM *)
+(* FIX ME: implement efficient way to create new AM from the old one *)
+let add rete_network am tuple =
+  let node_refs = mk_refs rete_network []
+  in
+    try
+      let node_ref = List.assoc am node_refs in
+      let new_node =
+        match !node_ref with
+        | Node (am, prev_bm, node) ->
+            node_ref :=
+              Node ((create_am am.pattern (tuple :: am.tuples)), prev_bm,
+                node)
+        | Empty -> raise AM_not_found in
+      let rec execute_rete rete_network =
+        let get_bm node =
+          match node with
+          | Node (_, bm, _) -> bm
+          | Empty -> { solutions = []; }
+        in
+          match rete_network with
+          | Node (am, bm, node) ->
+              if rete_network <> !node_ref
+              then Node (am, (join am (get_bm node)), (execute_rete node))
+              else Node (am, (join am bm), node)
+          | Empty -> Empty in
+      let (_, p_node) = List.hd node_refs in execute_rete !p_node
+    with | Not_found -> raise AM_not_found
+  
+(*** given rete network start activations **)
+let rec execute_rete rete_network =
+  let get_bm node =
+    match node with | Node (_, bm, _) -> bm | Empty -> { solutions = []; }
+  in
+    match rete_network with
+    | Node (am, _, node) ->
+        Node (am, (join am (get_bm node)), (execute_rete node))
+    | Empty -> Empty
+  
 (* takes a list of AMs and joins them *)
 let execute_am_list ams =
   let empty_bm = { solutions = []; }
   in List.fold_right (fun am acc -> join am acc) ams empty_bm
-  
-(* ------------------------------------- HARDCODED QUEY MAP ?x { ?x type   *)
-(* ?y ?x color, Red }                                                      *)
-let qry2 l =
-  let l1 = List.filter (fun tup -> tup.pred = (Constant "type")) l in
-  (* all elements of predicate type *)
-  let l2 =
-    List.filter
-      (fun tup ->
-         (tup.pred = (Constant "hasColor")) && (tup.obj = (Constant "Red")))
-      l
-  in
-    (* all elements that have color Red *)
-    List.fold_right
-      (fun tup1 acc ->
-         let join = List.filter (fun tup2 -> tup1.subj = tup2.subj) l2
-         in if join = [] then acc else (tup1 :: join) @ acc)
-      l1 []
   
 (* ---------------- Extended tuple: a tuple extended with a valuation of   *)
 (* variables.                                                              *)
