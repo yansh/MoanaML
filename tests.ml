@@ -12,7 +12,7 @@
 open Config
   
 open OUnit
-
+  
 (***************  TUPLES ***********************)
 let t1 =
   {
@@ -23,7 +23,7 @@ let t1 =
     time_stp = None;
     sign = None;
   }
-	
+  
 let t2 =
   {
     subj = Constant "a";
@@ -123,7 +123,7 @@ let t11 =
     time_stp = None;
     sign = None;
   }
-
+  
 let t12 =
   {
     subj = Constant "d";
@@ -133,7 +133,7 @@ let t12 =
     time_stp = None;
     sign = None;
   }
-
+  
 let t13 =
   {
     subj = Constant "d";
@@ -143,7 +143,7 @@ let t13 =
     time_stp = None;
     sign = None;
   }
-      
+  
 let t14 =
   {
     subj = Constant "c2";
@@ -152,8 +152,8 @@ let t14 =
     ctxt = Constant "context";
     time_stp = None;
     sign = None;
-  } 
-
+  }
+  
 let t15 =
   {
     subj = Constant "c2";
@@ -162,9 +162,9 @@ let t15 =
     ctxt = Constant "context";
     time_stp = None;
     sign = None;
-  }     
-	  
-let tuples = [ t1; t2; t3; t4; t5; t6; t7; t8; t9; t10; t11]
+  }
+  
+let tuples = [ t1; t2; t3; t4; t5; t6; t7; t8; t9; t10; t11 ]
   
 (* Config.print_tuples tuples;; *)
 (*************** QUERY TEMPLATE TUPLES *******************)
@@ -217,17 +217,17 @@ let q5 =
     time_stp = None;
     sign = None;
   }
-
+  
 let q5' =
   {
     subj = Variable "?y";
     pred = Constant "rgbValue";
-    obj =  Variable "?c";
+    obj = Variable "?c";
     ctxt = Constant "context";
     time_stp = None;
     sign = None;
   }
-  	  
+  
 let q6 =
   {
     subj = Variable "?y";
@@ -262,8 +262,7 @@ let _ = print_endline "---- Unit tests ----- "
 let test0 _ =
   let db = Moana_lists.S.init tuples in
   let query = [ q1; q2 ] and q_exp_res = [ [ t1; t9 ] ] in
-  let res_q = Moana_lists.S.query db query
-  in assert_equal q_exp_res res_q
+  let res_q = Moana_lists.S.query db query in assert_equal q_exp_res res_q
   
 (*print_tuples_list res_q1;;
  print_tuples_list q1_exp_res;;*)
@@ -351,16 +350,14 @@ let test4 _ =
 (* create alpha memory and add tuples to it *)
 let test5 _ =
   let query = q6 and q_exp_res = [ t10; t11 ] in
-  let am = create_am query tuples
-  in assert_equal q_exp_res am.tuples
+  let am = create_am query tuples in assert_equal q_exp_res am.tuples
   
 (* test simple join function AM with empty BM *)
 let test6 _ =
   let q_exp_res = { solutions = [ ("?x", ((Constant "a"), [ t1 ])) ]; } in
   let am = create_am q1 tuples in
   let bm = { solutions = []; } in
-  let new_bm = join am bm
-  in  assert_equal new_bm q_exp_res
+  let new_bm = join am bm in assert_equal new_bm q_exp_res
   
 (* TEST :
  
@@ -372,11 +369,11 @@ Implement by create a combination of AM and BM
 *)
 let test7 _ =
   let am1 = create_am q1 tuples and am2 = create_am q2 tuples
+
   and q_exp_res =
     { solutions = [ ("?x", ((Constant "a"), [ t9; t1 ])) ]; } in
   let bm = { solutions = []; } in
-  let res_bm = join am2 (join am1 bm)
-  in assert_equal res_bm q_exp_res
+  let res_bm = join am2 (join am1 bm) in assert_equal res_bm q_exp_res
   
 (* TEST 8: 
    
@@ -388,19 +385,21 @@ let test7 _ =
     }
 *)
 let test8 _ =
-	let exd_tuples = [t12; t13; t14; t15] @ tuples in
+  let exd_tuples = [ t12; t13; t14; t15 ] @ tuples in
   let q_exp_res =
-    { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ;("?y", ((Constant "c2"), 
-		[ t15; t14; t13; t12])) ]; } in
+    {
+      solutions =
+        [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ]));
+          ("?y", ((Constant "c2"), [ t15; t14; t13; t12 ])) ];
+    } in
   let am1 = create_am q1 exd_tuples and am2 = create_am q3 exd_tuples
 
   and am3 = create_am q4 exd_tuples and am4 = create_am q5 exd_tuples in
   (*let p = print_mappings am2*)
   let res_bm = join am4 (join am3 (join am2 (join am1 { solutions = []; })))
-  (*in let p = print_bm res_bm*) in  assert_equal res_bm q_exp_res
-	
-
-(* TEST 8': 
+  in (*in let p = print_bm res_bm*) assert_equal res_bm q_exp_res
+  
+(* TEST 9: 
    
  MAP  {    
      ?x, type, Car
@@ -409,18 +408,17 @@ let test8 _ =
      ?y, rgbValue, White  
     }
 *)
-let test8' _ =
+let test9 _ =
   let q_exp_res =
     { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; } in
   let am1 = create_am q1 tuples and am2 = create_am q3 tuples
-  and am3 = create_am q4 tuples and am4 = create_am q5 tuples in 
-	let am_list = [am1;am2;am3;am4] in
-  (*let p = print_mappings am2*)
+
+  and am3 = create_am q4 tuples and am4 = create_am q5 tuples in
+  let am_list = [ am1; am2; am3; am4 ] in (*let p = print_mappings am2*)
   let res_bm = execute_am_list (List.rev am_list)
   in (*let p = print_bm res_bm in *) assert_equal res_bm q_exp_res
-
-	
-(*** TEST 8'': 
+  
+(*** TEST 10: 
    
 Accepts list of AM and create Rete network. The last BM in the network contains 
 the matching tuples to the query: 
@@ -432,21 +430,19 @@ the matching tuples to the query:
      ?y, rgbValue, White  
     }
 ***)
-
-let test8'' _ =
+let test10 _ =
   let q_exp_res =
     { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; } in
   let am1 = create_am q1 tuples and am2 = create_am q3 tuples
-  and am3 = create_am q4 tuples and am4 = create_am q5 tuples in 
-	let am_list = [am1;am2;am3;am4] in
-  (*let p = print_mappings am2*)
-  let res_rete_network =  rete (am_list) in 
-	let Node(_, res_bm, _)  = execute_rete res_rete_network 
-  (*in let p = print_bm res_bm*) in  assert_equal res_bm q_exp_res
-			
-(* Tests for Irmin backed*)
 
-(* TEST 9:
+  and am3 = create_am q4 tuples and am4 = create_am q5 tuples in
+  let am_list = [ am1; am2; am3; am4 ] in (*let p = print_mappings am2*)
+  let res_rete_network = rete am_list in
+  let (Node (_, res_bm, _)) = execute_rete res_rete_network
+  in (*in let p = print_bm res_bm*) assert_equal res_bm q_exp_res
+  
+(* Tests for Irmin backed*)
+(* TEST 11:
    
  MAP {    
      ?x, type, Car
@@ -454,27 +450,27 @@ let test8'' _ =
     }
      
 *)
-let test9 _ =
+let test11 _ =
   let db = Moana_irmin.S.init tuples in
   let query10 = [ q1; q2 ] and q10_exp_res = [ [ t1; t9 ] ] in
-  let res_q10 = Moana_irmin.S.query db query10 in 
-	(*let p = print_tuples_list res_q10 in let p1 = print_tuples_list q10_exp_resin*)
-	 assert_equal q10_exp_res res_q10	
-
-(* Test 10 *)
+  let res_q10 = Moana_irmin.S.query db query10
+  in
+    (*let p = print_tuples_list res_q10 in let p1 = print_tuples_list q10_exp_resin*)
+    assert_equal q10_exp_res res_q10
+  
+(* Test 12 *)
 (* Tests the add function and to_list function*)
-
-let test10 _ =
-  let db = Moana_irmin.S.init [t1; t2] in
-  let exp_res11 = [t1; t2; t3] in
-  let res11 = Moana_irmin.S.add db t3 in     
-     assert_equal exp_res11 (Moana_irmin.S.to_list res11)   
-
-    
-(*** TEST 10'': 
+let test12 _ =
+  let db = Moana_irmin.S.init [ t1; t2 ] in
+  let exp_res11 = [ t1; t2; t3 ] in
+  let res11 = Moana_irmin.S.add db t3
+  in assert_equal exp_res11 (Moana_irmin.S.to_list res11)
+  
+(*** TEST 13: 
    
-Accepts list of AM and create Rete network. The last BM in the network contains 
-the matching tuples to the query: 
+This is a standing query test. We first construct a rete network.
+Ten we add a new tuple which triggers an activation and updates the final node 
+of the network with the current result.
  
  MAP  {    
      ?x, type, Car
@@ -483,27 +479,29 @@ the matching tuples to the query:
      ?y, rgbValue, White
     }
 ***)
-
-(*let test10'' _ =
+let test13 _ =
+  let exd_tuples = [ t13; t14; t15 ] @ tuples in
   let q_exp_res =
-    { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; } in
-  let am1 = create_am q1 tuples and am2 = create_am q3 tuples
+    {
+      solutions =
+        [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ]));
+          ("?y", ((Constant "c2"), [ t15; t14; t13; t12 ])) ];
+    } in
+  let am1 = create_am q1 exd_tuples and am2 = create_am q3 exd_tuples
 
-  and am3 = create_am q4 tuples and am4 = create_am q5 tuples in 
-    let am_list = [am1;am2;am3;am4] in
-  (*let p = print_mappings am2*)
-  let res_rete_network =  rete (am_list) in 
-    let Node(_, res_bm, _)  = execute_rete res_rete_network 
-  in let p = print_bm res_bm in  assert_equal res_bm q_exp_res*)
-            				
-		
+  and am3 = create_am q4 exd_tuples and am4 = create_am q5 exd_tuples in
+  let am_list = [ am1; am2; am3; am4 ] in (*let p = print_mappings am2*)
+  let rete_network = rete am_list in
+  let (Node (_, res_bm, _)) = add rete_network am1 t12 in
+  let p = print_bm res_bm in assert_equal res_bm q_exp_res
+  
 let suite =
   "Unit tests" >:::
     [ "test0" >:: test0; "test1" >:: test1; "test2" >:: test2;
       "test3" >:: test3; "test4" >:: test4; "test5" >:: test5;
-      "test6" >:: test6; "test7" >:: test7; "test8" >:: test8; 
-			"test8'" >:: test8';"test8''" >:: test8'';
-			"test10">:: test10;]
+      "test6" >:: test6; "test7" >:: test7; "test8" >:: test8;
+      "test9" >:: test9; "test10" >:: test10; "test11" >:: test11;
+      "test12" >:: test12; "test13" >:: test13 ]
   
 let _ = run_test_tt_main suite
   
