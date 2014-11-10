@@ -332,8 +332,7 @@ let add rete_network am tuple =
               else
                 (let new_am =
                    create_am current_am.pattern (tuple :: current_am.tuples) in
-                 let p = print_bm (join new_am (get_bm node))
-                 in
+                 (*let p = print_bm (join new_am (get_bm node)) in*)
                    (node_ref :=
                       Node (new_am, (join new_am (get_bm node)), node);
                     !node_ref))

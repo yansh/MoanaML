@@ -493,7 +493,7 @@ let test13 _ =
   let am_list = [ am1; am2; am3; am4 ] in (*let p = print_mappings am2*)
   let rete_network = rete am_list in
   let (Node (_, res_bm, _)) = add rete_network am1 t12 in
-  let p = print_bm res_bm in assert_equal res_bm q_exp_res
+  (*let p = print_bm res_bm in*) assert_equal res_bm q_exp_res
   
 let suite =
   "Unit tests" >:::
