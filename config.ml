@@ -317,27 +317,31 @@ let add rete_network am tuple =
   in
     try
       let node_ref = List.assoc am node_refs in
-      let new_node =
-        match !node_ref with
-        | Node (am, prev_bm, node) ->
-            node_ref :=
-              Node ((create_am am.pattern (tuple :: am.tuples)), prev_bm,
-                node)
-        | Empty -> raise AM_not_found in
-      let rec execute_rete rete_network =
+      let rec regen rete_network =
         let get_bm node =
           match node with
           | Node (_, bm, _) -> bm
           | Empty -> { solutions = []; }
         in
           match rete_network with
-          | Node (am, bm, node) ->
+          | Node (current_am, bm, node) ->
               if rete_network <> !node_ref
-              then Node (am, (join am (get_bm node)), (execute_rete node))
-              else Node (am, (join am bm), node)
-          | Empty -> Empty in
-      let (_, p_node) = List.hd node_refs in execute_rete !p_node
-    with | Not_found -> raise AM_not_found
+              then (*let p= print_bm  bm in*)
+                Node (current_am, (join current_am (get_bm (regen node))),
+                  node)
+              else
+                (let new_am =
+                   create_am current_am.pattern (tuple :: current_am.tuples) in
+                 let p = print_bm (join new_am (get_bm node))
+                 in
+                   (node_ref :=
+                      Node (new_am, (join new_am (get_bm node)), node);
+                    !node_ref))
+          | Empty -> Empty
+      in regen rete_network
+    with
+    | (*let (_, p_node) = List.hd node_refs in execute_rete !p_node*)
+        Not_found -> Empty
   
 (*** given rete network start activations **)
 let rec execute_rete rete_network =
