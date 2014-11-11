@@ -345,19 +345,30 @@ MAP  {
 (*  test filter function *)
 let test4 _ =
   let query = q6 and q_exp_res = [ t10; t11 ] in
-  let res_q = filter query tuples in assert_equal q_exp_res res_q
+  let res_q = Rete.filter query tuples in assert_equal q_exp_res res_q
   
 (* create alpha memory and add tuples to it *)
 let test5 _ =
   let query = q6 and q_exp_res = [ t10; t11 ] in
-  let am = create_am query tuples in assert_equal q_exp_res am.tuples
+  let am = Rete.create_am query tuples in assert_equal q_exp_res am.tuples
   
 (* test simple join function AM with empty BM *)
 let test6 _ =
-  let q_exp_res = { solutions = [ ("?x", ((Constant "a"), [ t1 ])) ]; } in
-  let am = create_am q1 tuples in
-  let bm = { solutions = []; } in
-  let new_bm = join am bm in assert_equal new_bm q_exp_res
+  let module Test =
+    struct
+      open Rete
+        
+      let q_exp_res =
+        { Rete.solutions = [ ("?x", ((Constant "a"), [ t1 ])) ]; }
+        
+      let am = Rete.create_am q1 tuples
+        
+      let bm = { Rete.solutions = []; }
+        
+      let new_bm = Rete.join am bm
+        
+    end
+  in assert_equal Test.new_bm Test.q_exp_res
   
 (* TEST :
  
@@ -368,12 +379,23 @@ Implement by create a combination of AM and BM
     }
 *)
 let test7 _ =
-  let am1 = create_am q1 tuples and am2 = create_am q2 tuples
+  let module Test =
+    struct
+      open Rete
+        
+      let am1 = create_am q1 tuples
 
-  and q_exp_res =
-    { solutions = [ ("?x", ((Constant "a"), [ t9; t1 ])) ]; } in
-  let bm = { solutions = []; } in
-  let res_bm = join am2 (join am1 bm) in assert_equal res_bm q_exp_res
+      and am2 = create_am q2 tuples
+
+      and q_exp_res =
+        { solutions = [ ("?x", ((Constant "a"), [ t9; t1 ])) ]; }
+        
+      let bm = { solutions = []; }
+        
+      let res_bm = join am2 (join am1 bm)
+        
+    end
+  in assert_equal Test.res_bm Test.q_exp_res
   
 (* TEST 8: 
    
@@ -385,19 +407,32 @@ let test7 _ =
     }
 *)
 let test8 _ =
-  let exd_tuples = [ t12; t13; t14; t15 ] @ tuples in
-  let q_exp_res =
-    {
-      solutions =
-        [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ]));
-          ("?y", ((Constant "c2"), [ t15; t14; t13; t12 ])) ];
-    } in
-  let am1 = create_am q1 exd_tuples and am2 = create_am q3 exd_tuples
+  let module Test =
+    struct
+      open Rete
+        
+      let exd_tuples = [ t12; t13; t14; t15 ] @ tuples
+        
+      let q_exp_res =
+        {
+          solutions =
+            [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ]));
+              ("?y", ((Constant "c2"), [ t15; t14; t13; t12 ])) ];
+        }
+        
+      let am1 = create_am q1 exd_tuples
 
-  and am3 = create_am q4 exd_tuples and am4 = create_am q5 exd_tuples in
-  (*let p = print_mappings am2*)
-  let res_bm = join am4 (join am3 (join am2 (join am1 { solutions = []; })))
-  in (*in let p = print_bm res_bm*) assert_equal res_bm q_exp_res
+      and am2 = create_am q3 exd_tuples
+      and am3 = create_am q4 exd_tuples
+
+      and am4 = create_am q5 exd_tuples
+        
+      (*let p = print_mappings am2*)
+      let res_bm =
+        join am4 (join am3 (join am2 (join am1 { solutions = []; })))
+        
+    end
+  in (*in let p = print_bm res_bm*) assert_equal Test.res_bm Test.q_exp_res
   
 (* TEST 9: 
    
@@ -409,14 +444,27 @@ let test8 _ =
     }
 *)
 let test9 _ =
-  let q_exp_res =
-    { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; } in
-  let am1 = create_am q1 tuples and am2 = create_am q3 tuples
+  let module Test =
+    struct
+      open Rete
+        
+      let q_exp_res =
+        { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; }
+        
+      let am1 = create_am q1 tuples
 
-  and am3 = create_am q4 tuples and am4 = create_am q5 tuples in
-  let am_list = [ am1; am2; am3; am4 ] in (*let p = print_mappings am2*)
-  let res_bm = execute_am_list (List.rev am_list)
-  in (*let p = print_bm res_bm in *) assert_equal res_bm q_exp_res
+      and am2 = create_am q3 tuples
+      and am3 = create_am q4 tuples
+
+      and am4 = create_am q5 tuples
+        
+      let am_list = [ am1; am2; am3; am4 ]
+        
+      (*let p = print_mappings am2*)
+      let res_bm = execute_am_list (List.rev am_list)
+        
+    end
+  in (*let p = print_bm res_bm in *) assert_equal Test.res_bm Test.q_exp_res
   
 (*** TEST 10: 
    
@@ -431,15 +479,29 @@ the matching tuples to the query:
     }
 ***)
 let test10 _ =
-  let q_exp_res =
-    { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; } in
-  let am1 = create_am q1 tuples and am2 = create_am q3 tuples
+  let module Test =
+    struct
+      open Rete
+        
+      let q_exp_res =
+        { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; }
+        
+      let am1 = create_am q1 tuples
 
-  and am3 = create_am q4 tuples and am4 = create_am q5 tuples in
-  let am_list = [ am1; am2; am3; am4 ] in (*let p = print_mappings am2*)
-  let res_rete_network = rete am_list in
-  let (Node (_, res_bm, _)) = execute_rete res_rete_network
-  in (*in let p = print_bm res_bm*) assert_equal res_bm q_exp_res
+      and am2 = create_am q3 tuples
+      and am3 = create_am q4 tuples
+
+      and am4 = create_am q5 tuples
+        
+      let am_list = [ am1; am2; am3; am4 ]
+        
+      (*let p = print_mappings am2*)
+      let res_rete_network = rete am_list
+        
+      let (Node (_, res_bm, _)) = execute_rete res_rete_network
+        
+    end
+  in (*in let p = print_bm res_bm*) assert_equal Test.res_bm Test.q_exp_res
   
 (* Tests for Irmin backed*)
 (* TEST 11:
@@ -480,20 +542,35 @@ of the network with the current result.
     }
 ***)
 let test13 _ =
-  let exd_tuples = [ t13; t14; t15 ] @ tuples in
-  let q_exp_res =
-    {
-      solutions =
-        [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ]));
-          ("?y", ((Constant "c2"), [ t15; t14; t13; t12 ])) ];
-    } in
-  let am1 = create_am q1 exd_tuples and am2 = create_am q3 exd_tuples
+  let module Test =
+    struct
+      open Rete
+        
+      let exd_tuples = [ t13; t14; t15 ] @ tuples
+        
+      let q_exp_res =
+        {
+          solutions =
+            [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ]));
+              ("?y", ((Constant "c2"), [ t15; t14; t13; t12 ])) ];
+        }
+        
+      let am1 = create_am q1 exd_tuples
 
-  and am3 = create_am q4 exd_tuples and am4 = create_am q5 exd_tuples in
-  let am_list = [ am1; am2; am3; am4 ] in (*let p = print_mappings am2*)
-  let rete_network = rete am_list in
-  let (Node (_, res_bm, _)) = add rete_network am1 t12 in
-  (*let p = print_bm res_bm in*) assert_equal res_bm q_exp_res
+      and am2 = create_am q3 exd_tuples
+      and am3 = create_am q4 exd_tuples
+
+      and am4 = create_am q5 exd_tuples
+        
+      let am_list = [ am1; am2; am3; am4 ]
+        
+      (*let p = print_mappings am2*)
+      let rete_network = rete am_list
+        
+      let (Node (_, res_bm, _)) = add rete_network am1 t12
+        
+    end
+  in (*let p = print_bm res_bm in*) assert_equal Test.res_bm Test.q_exp_res
   
 let suite =
   "Unit tests" >:::
