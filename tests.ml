@@ -13,6 +13,8 @@ open Config
   
 open OUnit
   
+open Lexing
+  
 (***************  TUPLES ***********************)
 let t1 =
   {
@@ -358,14 +360,13 @@ let test6 _ =
     struct
       open Rete
         
-      let q_exp_res =
-        { Rete.solutions = [ ("?x", ((Constant "a"), [ t1 ])) ]; }
+      let q_exp_res = { solutions = [ ("?x", ((Constant "a"), [ t1 ])) ]; }
         
-      let am = Rete.create_am q1 tuples
+      let am = create_am q1 tuples
         
-      let bm = { Rete.solutions = []; }
+      let bm = { solutions = []; }
         
-      let new_bm = Rete.join am bm
+      let new_bm = join am bm
         
     end
   in assert_equal Test.new_bm Test.q_exp_res
@@ -572,13 +573,32 @@ let test13 _ =
     end
   in (*let p = print_bm res_bm in*) assert_equal Test.res_bm Test.q_exp_res
   
+(*** TEST 14:   
+Testing simple parser - create t1 tuple from a string
+
+T1:    
+		subj = Constant "a";
+    pred = Constant "type";
+    obj = Constant "Car";
+    ctxt = Constant "context";
+    time_stp = None;
+    sign = None;
+		
+***)
+let test14 _ =
+  let tuple =
+    Tuple_parser.tuple Tuple_lexer.lex
+      (Lexing.from_string "(a,type,Car,context)") in
+  let res_tuple = match tuple with | Some t -> t | None -> raise Wrong_tuple
+  in (*let p = print_bm res_bm in*) assert_equal res_tuple t1
+  
 let suite =
   "Unit tests" >:::
     [ "test0" >:: test0; "test1" >:: test1; "test2" >:: test2;
       "test3" >:: test3; "test4" >:: test4; "test5" >:: test5;
       "test6" >:: test6; "test7" >:: test7; "test8" >:: test8;
       "test9" >:: test9; "test10" >:: test10; "test11" >:: test11;
-      "test12" >:: test12; "test13" >:: test13 ]
+      "test12" >:: test12; "test13" >:: test13; "test14" >:: test14 ]
   
 let _ = run_test_tt_main suite
   
