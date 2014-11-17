@@ -2,9 +2,7 @@
 
 eval `opam config env`
 
-ocamlfind ocamlc -g -o moanaml -thread -linkpkg \
-  -package core,yojson,lwt,lwt.unix,irmin,irmin.unix,sqlite3 \
-  msqlite.ml config.ml moana.mli moana.ml moana_lists.ml moana_irmin.ml rete.ml \
-  tests.ml
+ocamlbuild -use-ocamlfind -use-menhir -classic-display -package yojson,sqlite3,irmin,irmin.backend -libs unix,lwt-unix,git-unix,irmin-server,irmin-unix,irmin,sqlite3 -tag thread  tests.byte
 
-./moanaml
+./tests.byte
+
