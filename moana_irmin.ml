@@ -9,6 +9,8 @@
 (* RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN * ACTION OF  *)
 (* CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF * OR IN   *)
 (* CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.                *)
+
+
 (* Irmin based storage *)
 open Moana
   
@@ -39,7 +41,7 @@ module TupleView =
         let i = string_of_int i
         in
           (Store.View.read_exn v [ i ]) >>=
-            (fun x -> return ((from_json x) :: acc))
+            (fun x -> return ((Helper.from_json x) :: acc))
       in
         (Store.View.list v [ [] ]) >>=
           (fun key_list ->
@@ -60,7 +62,7 @@ module TupleView =
                    (* let p=print_endline (Yojson.Basic.to_string (to_json  *)
                    (* () tpl)) in                                           *)
                    Store.View.update v [ i ]
-                     (Yojson.Basic.to_string (to_json () tuple)))
+                     (Yojson.Basic.to_string (Helper.to_json tuple)))
               tuples)
              >>=
              (fun () -> (*print_tuples (Lwt_unix.run (t_of_view v));*)
@@ -131,7 +133,7 @@ module G : GRAPH =
     let add ?(g = graph) (tuple : Config.tuple) =
       let s =
         Printf.sprintf "Adding fact to [ %s <- %s ]" IS.name
-          (Config.to_string tuple)
+          (Helper.to_string tuple)
       in (print_endline s; IS.add g tuple)
       
     let map ?(g = graph) (query : Config.tuple list) = IS.query g query
@@ -142,7 +144,7 @@ module G : GRAPH =
         match dbList with
         | [] -> "Finished\n"
         | head :: rest ->
-            (Config.to_string head) ^ ("\n" ^ (string_lst rest))
+            (Helper.to_string head) ^ ("\n" ^ (string_lst rest))
       in string_lst dbList
       
   end

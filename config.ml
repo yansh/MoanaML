@@ -9,8 +9,6 @@
 (* RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN * ACTION OF  *)
 (* CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF * OR IN   *)
 (* CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.                *)
-(* Irmin based storage *)
-
 open Yojson
   
 exception Wrong_tuple
@@ -48,74 +46,7 @@ type tuple =
 
 type db
 
-let to_string =
-  function
-  | {
-      subj = Constant s;
-      pred = Constant p;
-      obj = Constant o;
-      ctxt = Constant c;
-      time_stp = _;
-      sign = _ } -> Printf.sprintf "< %s %s %s >" s p o
-  | _ -> "Not printing this tuple."
-  
-let value_to_str = function | Variable x -> x | Constant x -> x
-  
-(* FIX ME: Need to take care of Context, Signature and Timestamp *)
-let to_json t =
-  function
-  | {
-      subj = Constant s;
-      pred = Constant p;
-      obj = Constant o;
-      ctxt = Constant c;
-      time_stp = _;
-      sign = _ } ->
-      let t_json : Yojson.Basic.json =
-        `Assoc
-          [ ("Subject", (`String s)); ("Predicate", (`String p));
-            ("Object", (`String o)) ]
-      in t_json
-  | _ -> assert false
-  
-(* create tuple from JSON *)
-let from_json json_t =
-  (* FIX ME: Need to take care of Context, Signature and Timestamp *)
-  let open Yojson.Basic.Util
-  in
-    let json = Yojson.Basic.from_string json_t in
-    let s = json |> (member "Subject") in
-    let p = json |> (member "Predicate") in
-    let o = json |> (member "Object")
-    in
-      {
-        subj = Constant (Basic.Util.to_string s);
-        pred = Constant (Basic.Util.to_string p);
-        obj = Constant (Basic.Util.to_string o);
-        ctxt = Constant "context";
-        time_stp = None;
-        sign = None;
-      }
-  
-let print_value =
-  function
-  | Variable x ->
-      (print_string "Var (";
-       print_string x;
-       print_string ") ";
-       print_endline "")
-  | Constant x ->
-      (print_string "Const (";
-       print_string x;
-       print_string ") ";
-       print_endline "")
-  
-let rec print_tuples tuples =
-  match tuples with
-  | [] -> print_endline "--"
-  | head :: rest -> (print_endline (to_string head); print_tuples rest)
-  
-let print_tuples_list tuples = List.map (fun t -> print_tuples t) tuples
+ 
   
 (* ---------------- Extended tuple: a tuple extended with a valuation of   *)
 (* variables.                                                              *)

@@ -85,7 +85,7 @@ module Make(S: STORE):(GRAPH with type t = S.t) = struct
           match dbList with
               | [] -> "Finished\n"
               | head :: rest ->
-                Config.to_string head ^ "\n" ^
+                Helper.to_string head ^ "\n" ^
                 string_lst rest in
     string_lst dbList ;;
       

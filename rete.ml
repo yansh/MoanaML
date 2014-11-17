@@ -70,7 +70,7 @@ let print_mappings am =
              | (Constant x, t) ->
                  (print_endline "";
                   print_string x;
-                  print_endline (to_string t))
+                  print_endline (Helper.to_string t))
              | (Variable _, _) -> print_string " ")
           values))
     am.vars
@@ -93,9 +93,9 @@ let print_bm bm =
        (* (string * (t element_type * tuple list) ) *)
        (print_endline "";
         print_endline var;
-        print_value value;
+        Helper.print_value value;
         print_string "[";
-        List.map (fun t -> print_string (to_string t)) tuples))
+        List.map (fun t -> print_string (Helper.to_string t)) tuples))
     bm.solutions
   
 (* joining BM and AM to create a new BM *)

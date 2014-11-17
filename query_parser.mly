@@ -1,7 +1,5 @@
 %token <string> STRING
 %token <string> VAR
-%token LEFT_BRACE
-%token RIGHT_BRACE
 %token COMMA
 
 %token MAP
@@ -10,18 +8,25 @@
 
 %token EOF
 
-%start <Config.tuple option> parse_tuple
+%start <Config.tuple list> parse
 %% 
 
 
-parse_tuple:
-  | t = tpl { Some (t) }
-  | EOF       { None }
-  ;
-	
-tpl:  LEFT_BRACE; s = elem; COMMA; p = elem; COMMA; o = elem; COMMA; c  = elem; RIGHT_BRACE 
+
+
+parse:
+ | q = query {q}
+ | EOF {[]} 
+
+query:  MAP; START; q = stmts; END {q}
+
+stmts: stmt =  list(tpl); {stmt}
+
+tpl:  s = elem; COMMA; p = elem; COMMA; o = elem; COMMA; c  = elem; 
 {{Config.subj = s; Config.pred = p; Config.obj = o; Config.ctxt = c; Config.time_stp = None; Config.sign = None}}  ;
 
 elem:
  | v = VAR {Variable v}
  | c = STRING {Constant c} 
+
+

@@ -11,7 +11,6 @@
 (* CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.                *)
 
 (* Signature for the STORE backend *)
-
 module type STORE =
 sig
 	type t

@@ -11,6 +11,8 @@
 (* CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.                *)
 open Config
   
+open Helper
+  
 open OUnit
   
 open Lexing
@@ -586,11 +588,46 @@ T1:
 		
 ***)
 let test14 _ =
-  let tuple =
-    Tuple_parser.tuple Tuple_lexer.lex
-      (Lexing.from_string "(a,type,Car,context)") in
-  let res_tuple = match tuple with | Some t -> t | None -> raise Wrong_tuple
+  let res_tuple = to_tuple "(a,type,Car,context)"
   in (*let p = print_bm res_bm in*) assert_equal res_tuple t1
+  
+(*** TEST 15:   
+Testing simple parser - create q4 tuple from a string
+
+The difference to Test 14, q3 tuple contains variable elements
+ 
+Q3:    
+    subj = Variable "?x";
+    pred = Constant "hasColor";
+    obj = Variable "?y";
+    ctxt = Constant "context";
+    time_stp = None;
+    sign = None;
+        
+***)
+let test15 _ =
+  let res_tuple = to_tuple "(?x,hasColor,?y,context)"
+  in (*let p = print_bm res_bm in*) assert_equal res_tuple q3
+  
+(* TEST 16:
+   
+Convert query string to list of query tuples
+ 	
+ MAP {    
+     ?x, type, Car
+     ?x, hasColor, Red   
+    }
+     
+*)
+let test16 _ =
+  let qlist =
+    str_query_list
+      "MAP {?x, type, Car, context  
+	  ?x, hasColor, Red, context   
+    }"
+
+  and res = [ q1; q2 ]
+  in assert_equal qlist res
   
 let suite =
   "Unit tests" >:::
@@ -598,7 +635,8 @@ let suite =
       "test3" >:: test3; "test4" >:: test4; "test5" >:: test5;
       "test6" >:: test6; "test7" >:: test7; "test8" >:: test8;
       "test9" >:: test9; "test10" >:: test10; "test11" >:: test11;
-      "test12" >:: test12; "test13" >:: test13; "test14" >:: test14 ]
+      "test12" >:: test12; "test13" >:: test13; "test14" >:: test14;
+      "test15" >:: test15; "test16" >:: test16 ]
   
 let _ = run_test_tt_main suite
   

@@ -47,7 +47,7 @@ module G : GRAPH = struct
   let graph = LS.empty
 
   let add ?(g = graph) (tuple : Config.tuple) =
-    let s = Printf.sprintf "Adding fact to [ %s <- %s ]" LS.name (Config.to_string tuple) in
+    let s = Printf.sprintf "Adding fact to [ %s <- %s ]" LS.name (Helper.to_string tuple) in
     print_endline s;
     LS.add g tuple
 
@@ -59,7 +59,7 @@ module G : GRAPH = struct
           match dbList with
               | [] -> "Finished\n"
               | head :: rest ->
-                Config.to_string head ^ "\n" ^
+                Helper.to_string head ^ "\n" ^
                 string_lst rest in
     string_lst dbList
 end
