@@ -620,14 +620,28 @@ Convert query string to list of query tuples
      
 *)
 let test16 _ =
-  let qlist =
+  let res =
     str_query_list
-      "MAP {?x, type, Car, context  
-	  ?x, hasColor, Red, context   
-    }"
+      "MAP {
+				?x, type, Car, context  
+	  		?x, hasColor, Red, context   
+    	 }"
 
-  and res = [ q1; q2 ]
-  in assert_equal qlist res
+  and exp_res = [ q1; q2 ] in assert_equal res exp_res
+  
+(* TEST 17:
+   
+Convert strings of tuples to list tuple  objects
+     
+*)
+let test17 _ =
+  let res =
+    to_tuple_lst
+      "{(a,type,Car,context) 
+			 (a,hasColor,c,context) 
+			 (b,type,Chair,context)
+			 (b,hasColor,c,context)}"
+  and exp_res = [t1; t2; t3; t4 ] in assert_equal res exp_res
   
 let suite =
   "Unit tests" >:::
@@ -636,7 +650,7 @@ let suite =
       "test6" >:: test6; "test7" >:: test7; "test8" >:: test8;
       "test9" >:: test9; "test10" >:: test10; "test11" >:: test11;
       "test12" >:: test12; "test13" >:: test13; "test14" >:: test14;
-      "test15" >:: test15; "test16" >:: test16 ]
+      "test15" >:: test15; "test16" >:: test16;"test17" >:: test17 ]
   
 let _ = run_test_tt_main suite
   

@@ -4,6 +4,7 @@ open Query_parser
 
 exception SyntaxError of string
 
+(* code for the fun taken from  Real World Ocaml book *)
 let next_line lexbuf =
   let pos = lexbuf.lex_curr_p in
   lexbuf.lex_curr_p <-
@@ -11,8 +12,7 @@ let next_line lexbuf =
                pos_lnum = pos.pos_lnum + 1
     }
 
-		
-
+	
 }	
 
 let newline = '\r' | '\n' | "\r\n"     
