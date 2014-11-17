@@ -1,5 +1,5 @@
 # Edit this for your own project dependencies
-OPAM_DEPENDS="ocamlfind ounit re core sqlite3-ocaml yojson lwt irmin "
+OPAM_DEPENDS="ocamlfind ounit re core sqlite3-ocaml menhir yojson lwt irmin "
 	 
 ppa=avsm/ocaml42+opam12 
 echo "yes" | sudo add-apt-repository ppa:$ppa
