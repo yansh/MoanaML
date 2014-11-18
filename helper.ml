@@ -105,12 +105,13 @@ try
   | Tuple_parser.Error ->		
     Printf.fprintf stderr "%a: syntax error\n" print_position lexbuf; []
   	
-  
+(** string to tuple *)  
 let to_tuple s =
   let tuple = Tuple_parser.parse_tuple Tuple_lexer.lex (Lexing.from_string s)
   in match tuple with | Some t -> t | None -> raise Wrong_tuple
-  
+	
+(** string to list of query tuples **)  
 let str_query_list s =
   let queryBuffer = Lexing.from_string s
   in Query_parser.parse Query_lexer.lex queryBuffer
-  
+	

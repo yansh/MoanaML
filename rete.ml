@@ -10,7 +10,6 @@
 (* CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF * OR IN   *)
 (* CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.                *)
 (* Irmin based storage *)
-
 (* ------ RETE ------------ *)
 (** AM keeps tuples matching the pattern.
 * Each AM also contains vars which is a list of paits (position, var_string)
@@ -18,9 +17,8 @@
 * This is used later when we join AM with BM
 * 
 *)
-
-open Config 
-
+open Config
+  
 (* helper to filter tuples list to form the pattern *)
 let filter ptrn tuples =
   let cmp p_attr t_attr =
@@ -240,8 +238,9 @@ let add rete_network am tuple =
                   node)
               else
                 (let new_am =
-                   create_am current_am.pattern (tuple :: current_am.tuples) in
-                 (*let p = print_bm (join new_am (get_bm node)) in*)
+                   create_am current_am.pattern (tuple :: current_am.tuples)
+                 in
+                   (*let p = print_bm (join new_am (get_bm node)) in*)
                    (node_ref :=
                       Node (new_am, (join new_am (get_bm node)), node);
                     !node_ref))
@@ -266,9 +265,35 @@ let execute_am_list ams =
   let empty_bm = { solutions = []; }
   in List.fold_right (fun am acc -> join am acc) ams empty_bm
   
-(** function to create rete newtork from a query **)  
-let to_rete str tuples = 
-    let qs = Helper.str_query_list str in 
-		let ams = List.map (fun q -> create_am q tuples) qs 
-    in rete ams 
+(** function to create rete newtork from a query **)
+let to_rete str tuples =
+  let qs = Helper.str_query_list str in
+  let ams = List.map (fun q -> create_am q tuples) qs in rete ams
+  
+ 
+(** function to return a list of values for a particular variable in the solution (BM) **)
+let get_lst_values bm var = (* helper to print BM *)
+  List.fold_right
+    (fun (v, (value, tuples)) acc ->
+       (* (string * (t element_type * tuple list) ) *)
+       if var = v then value :: acc else acc)
+    bm.solutions []
 		
+(** helper method accepts query string and runs it over tuples, 
+extracts the values associated with the var **)
+  
+let exec_qry q tuples var =  
+  let network = to_rete q (List.flatten tuples) in
+  let result =
+    match execute_rete network with
+    | Node (_, result, _) -> result
+    | Empty -> { solutions = []; } in
+  (*let p = Rete.print_bm result*)
+  let v_list = get_lst_values result var
+  in
+    List.map
+      (function
+       | Constant x -> x
+       | _ -> raise Wrong_value )
+      v_list
+  
