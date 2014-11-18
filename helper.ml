@@ -85,9 +85,27 @@ let print_tuples_list tuples = List.map (fun t -> print_tuples t) tuples
   
 open Lexing
   
+
+let print_position outx lexbuf =
+  let pos = lexbuf.lex_curr_p in
+  Printf.fprintf outx "%s:%d:%d" pos.pos_fname
+    pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)	
+		
+(** convert string to list of tuple objects **)
 exception SyntaxError of string
+
+let to_tuple_lst s =
+	  let lexbuf = Lexing.from_string s in 
+try	
+	Tuple_parser.parse_lst Tuple_lexer.lex lexbuf
+	with
+	| SyntaxError msg ->		
+    Printf.fprintf stderr "%a: %s\n" print_position lexbuf msg;
+   []
+  | Tuple_parser.Error ->		
+    Printf.fprintf stderr "%a: syntax error\n" print_position lexbuf; []
+  	
   
-(** convert string to tuple object **)
 let to_tuple s =
   let tuple = Tuple_parser.parse_tuple Tuple_lexer.lex (Lexing.from_string s)
   in match tuple with | Some t -> t | None -> raise Wrong_tuple
