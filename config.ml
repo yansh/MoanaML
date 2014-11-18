@@ -14,6 +14,8 @@ open Yojson
 exception Wrong_tuple
   
 exception Wrong_template
+
+exception Wrong_value
   
 exception AM_not_found
   
