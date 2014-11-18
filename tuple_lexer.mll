@@ -21,7 +21,7 @@ rule lex = parse
   | ","             { COMMA }
   | "("             { LEFT_BRACE }
 	| "{"             {START}
-  | ['A'-'Z' 'a'-'z' '_']['0'-'9' 'A'-'Z' 'a'-'z' '_']* as s { STRING (s) }
+  |['a'-'z' 'A'-'Z' '0'-'9' '_']*[' ']?['a'-'z' 'A'-'Z' '0'-'9' '_' '@' '.' '-']+ as s { STRING (s) }
   | '?' ['A'-'Z' 'a'-'z' '_']* as v { VAR (v) }   	 
   | ")"             { RIGHT_BRACE }
 	| "}"             {END}
