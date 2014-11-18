@@ -266,3 +266,9 @@ let execute_am_list ams =
   let empty_bm = { solutions = []; }
   in List.fold_right (fun am acc -> join am acc) ams empty_bm
   
+(** function to create rete newtork from a query **)  
+let to_rete str tuples = 
+    let qs = Helper.str_query_list str in 
+		let ams = List.map (fun q -> create_am q tuples) qs 
+    in rete ams 
+		
