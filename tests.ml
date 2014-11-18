@@ -642,7 +642,36 @@ let test17 _ =
 			 (b,type,Chair,context)
 			 (b,hasColor,c,context)}"
   and exp_res = [t1; t2; t3; t4 ] in assert_equal res exp_res
-  
+
+(*** TEST 18: 
+   
+Accepts query string and creates a Rete network. The last BM in the network contains 
+the matching tuples to the query: 
+ 
+ MAP  {    
+     ?x, type, Car
+     ?x, hasColor, ?y
+     ?y, type, Color
+     ?y, rgbValue, White  
+    }
+***)
+let test18 _ =
+  let module Test =
+    struct
+      open Rete
+      let q_exp_res =
+        { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; }        
+		  let res_rete_network = 
+				to_rete "MAP{    
+                 ?x, type, Car, context
+                 ?x, hasColor, ?y, context
+                 ?y, type, Color, context
+                 ?y, rgbValue, White, context  
+    						}" tuples        
+      let (Node (_, res_bm, _)) = execute_rete res_rete_network
+        
+    end
+  in (*in let p = print_bm res_bm*) assert_equal Test.res_bm Test.q_exp_res
 let suite =
   "Unit tests" >:::
     [ "test0" >:: test0; "test1" >:: test1; "test2" >:: test2;
@@ -650,7 +679,8 @@ let suite =
       "test6" >:: test6; "test7" >:: test7; "test8" >:: test8;
       "test9" >:: test9; "test10" >:: test10; "test11" >:: test11;
       "test12" >:: test12; "test13" >:: test13; "test14" >:: test14;
-      "test15" >:: test15; "test16" >:: test16;"test17" >:: test17 ]
+      "test15" >:: test15; "test16" >:: test16;"test17" >:: test17;
+			"test18" >:: test18 ]
   
 let _ = run_test_tt_main suite
   
