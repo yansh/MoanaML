@@ -1,15 +1,19 @@
-(* * Copyright (c) 2014 Yan Shvartzshnaider * * Permission to use, copy,   *)
-(* modify, and distribute this software for any * purpose with or without  *)
-(* fee is hereby granted, provided that the above * copyright notice and   *)
-(* this permission notice appear in all copies. * * THE SOFTWARE IS        *)
-(* PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES * WITH REGARD  *)
-(* TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF * MERCHANTABILITY  *)
-(* AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR * ANY SPECIAL,  *)
-(* DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES * WHATSOEVER  *)
-(* RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN * ACTION OF  *)
-(* CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF * OR IN   *)
-(* CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.                *)
-(* Irmin based storage *)
+(*
+* Copyright (c) 2014 Yan Shvartzshnaider
+*
+* Permission to use, copy, modify, and distribute this software for any
+* purpose with or without fee is hereby granted, provided that the above
+* copyright notice and this permission notice appear in all copies.
+*
+* THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+* WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+* MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+* ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+* WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+* ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+* OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+*)
+
 (* ------ RETE ------------ *)
 (** AM keeps tuples matching the pattern.
 * Each AM also contains vars which is a list of paits (position, var_string)
@@ -117,7 +121,7 @@ let join am bm =
             (* am: (t element_type * tuple) list) *)
             (fun (am_var, am_values) acc ->
                try
-                 let (bm_value, _) = List.assoc am_var solutions in
+                 let _ = List.assoc am_var solutions in
                  (* filter all the solutions assoc with the variable *)
                  let sol_list =
                    List.filter (fun (bm_var, _) -> bm_var = am_var) solutions in
@@ -270,30 +274,27 @@ let to_rete str tuples =
   let qs = Helper.str_query_list str in
   let ams = List.map (fun q -> create_am q tuples) qs in rete ams
   
- 
 (** function to return a list of values for a particular variable in the solution (BM) **)
-let get_lst_values bm var = (* helper to print BM *)
+let get_lst_values bm (vars : string list) = (* helper to print BM *)
   List.fold_right
-    (fun (v, (value, tuples)) acc ->
-       (* (string * (t element_type * tuple list) ) *)
-       if var = v then value :: acc else acc)
-    bm.solutions []
-		
+    (fun var acc ->
+       let sols =
+         List.fold_right
+           (fun (v, (value, _)) acc2 ->
+              (* (string * (t element_type * tuple list) ) *)
+              if var = v then value :: acc2 else acc2)
+           bm.solutions []
+       in if (List.length sols) <> 0 then acc @ [ (var, sols) ] else acc)
+    vars []
+  
+(*** given rete network get the current values associated with var **)
+let rec get_values rete_network (vars : string list) =
+  match rete_network with
+  | Node (_, bm, node) -> (get_lst_values bm vars) @ (get_values node vars)
+  | Empty -> []
+  
 (** helper method accepts query string and runs it over tuples, 
 extracts the values associated with the var **)
-  
-let exec_qry q tuples var =  
-  let network = to_rete q (List.flatten tuples) in
-  let result =
-    match execute_rete network with
-    | Node (_, result, _) -> result
-    | Empty -> { solutions = []; } in
-  (*let p = Rete.print_bm result*)
-  let v_list = get_lst_values result var
-  in
-    List.map
-      (function
-       | Constant x -> x
-       | _ -> raise Wrong_value )
-      v_list
+let exec_qry q tuples =
+  let network = to_rete q (List.flatten tuples) in execute_rete network
   
