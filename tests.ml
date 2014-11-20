@@ -671,7 +671,7 @@ let test18 _ =
       let (Node (_, res_bm, _)) = execute_rete res_rete_network
         
     end
-  in (*in let p = print_bm res_bm*) assert_equal Test.res_bm Test.q_exp_res
+  in  (*let p = Rete.print_bm Test.res_bm in*) assert_equal Test.res_bm Test.q_exp_res
 let suite =
   "Unit tests" >:::
     [ "test0" >:: test0; "test1" >:: test1; "test2" >:: test2;
