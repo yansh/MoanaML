@@ -84,7 +84,7 @@ let q1 =
 	}"
   
 let results = Rete.exec_qry q1 contacts 
-let r = Rete.get_values results [ "?email" ; "?name"] |>
+let r = Rete.get_values results [  "?y"; "?email" ;  "?name"] |>
     (List.iter
        (fun v ->
           match v with

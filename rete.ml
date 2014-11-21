@@ -13,7 +13,6 @@
 * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 *)
-
 (* ------ RETE ------------ *)
 (** AM keeps tuples matching the pattern.
 * Each AM also contains vars which is a list of paits (position, var_string)
@@ -275,6 +274,14 @@ let to_rete str tuples =
   let ams = List.map (fun q -> create_am q tuples) qs in rete ams
   
 (** function to return a list of values for a particular variable in the solution (BM) **)
+let get_lst_value bm var =
+  List.fold_right
+    (fun (v, (value, _)) acc2 ->
+       (* (string * (t element_type * tuple list) ) *)
+       if var = v then value :: acc2 else acc2)
+    bm.solutions []
+  
+(** function to return a list of values for a particular variable in the solution (BM) **)
 let get_lst_values bm (vars : string list) = (* helper to print BM *)
   List.fold_right
     (fun var acc ->
@@ -282,16 +289,25 @@ let get_lst_values bm (vars : string list) = (* helper to print BM *)
          List.fold_right
            (fun (v, (value, _)) acc2 ->
               (* (string * (t element_type * tuple list) ) *)
-              if var = v then value :: acc2 else acc2)
+              if var = v then value :: acc2 else List.rev acc2)
            bm.solutions []
-       in if (List.length sols) <> 0 then acc @ [ (var, sols) ] else acc)
+       in if (List.length sols) <> 0 then [ (var, sols) ] @ acc else acc)
     vars []
   
 (*** given rete network get the current values associated with var **)
 let rec get_values rete_network (vars : string list) =
-  match rete_network with
-  | Node (_, bm, node) -> (get_lst_values bm vars) @ (get_values node vars)
-  | Empty -> []
+  (* check whether the variable has been found, return vars that still missing **)
+  let missing_vars values =
+    List.fold_right
+      (fun v acc ->
+         if (List.mem_assoc v values) == false then v :: acc else acc)
+      vars []
+  in
+    match rete_network with
+    | Node (_, bm, node) ->
+        let values = get_lst_values bm vars in
+        let mvars = missing_vars values in values @ (get_values node mvars)
+    | Empty -> []
   
 (** helper method accepts query string and runs it over tuples, 
 extracts the values associated with the var **)
