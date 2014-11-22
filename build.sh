@@ -6,4 +6,3 @@ ocamlbuild -r -use-ocamlfind -use-menhir -classic-display -package yojson,sqlite
 
 ./tests.byte
 ./contacts.byte
-
