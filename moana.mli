@@ -41,23 +41,16 @@ sig
 
 	type t
 	
-	val graph: t
+	val init: Config.tuple list -> t
 
 	(* add fact as a tuple *)
-	val add : ?g: t -> Config.tuple -> t
+	val add : t -> Config.tuple -> t
 	
 	(* specify a query as list of tuple, this will return a matching list of *)
-	val map : ?g: t -> Config.tuple list -> Config.tuple list list
+	val map : t -> Config.tuple list -> Config.tuple list list
 	
-	val to_string: t -> string
 
 end;;
-
-(* Beta Memory module type BetaMemory = sig type t val tuples: [t] val     *)
-(* add: Config.tuple -> tuples end;; module Join : functor                 *)
-(* (A:AlphaMemory)(B:Beta) -> sig type t val binding_variable: string ->   *)
-(* (string * int) list val tuples: t val create_filter: Config.tuple -> t  *)
-(* val add: Config.tuple -> t end;;                                        *)
 
 (* functor to create Moana graph from a given STORE implementation *)
 module Make : functor (S: STORE) ->
@@ -66,13 +59,11 @@ module Make : functor (S: STORE) ->
 	
 		type t = S.t
 		
-		val graph: t
+		val init: Config.tuple list -> t
 		
-		val add: ?g: t -> Config.tuple -> t
+		val add: t -> Config.tuple -> t
 		
-		val map: ?g: t -> Config.tuple list -> Config.tuple list list;;
+		val map: t -> Config.tuple list -> Config.tuple list list;;
 		
-		val to_string: t -> string
-	
 	end;;
 

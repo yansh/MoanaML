@@ -49,16 +49,15 @@ module type GRAPH =
     (*type tuple*)
       
     type t 
-     
-    val graph: t     
+		
+		 val init : Config.tuple list -> t
+        
     (* add fact as a tuple *)
-    val add : ?g:t -> Config.tuple -> t
+    val add : t -> Config.tuple -> t
       
     (* specify a query as list of tuple, this will return a matching list of *)
-    val map : ?g:t -> Config.tuple list -> Config.tuple list list     
-          
-    val to_string: t -> string
-      
+    val map : t -> Config.tuple list -> Config.tuple list list     
+                    
   end;;
 
 
@@ -68,18 +67,18 @@ module Make(S: STORE):(GRAPH with type t = S.t) = struct
     
   type t = S.t
     
-  let graph = S.empty
+  let init = S.init 
            
-  let add ?(g = S.empty) (tuple : Config.tuple) =
+  let add g (tuple : Config.tuple) =
      let s = Printf.sprintf "Adding fact to %s" S.name in
      print_endline s;
      S.add g tuple ;;
      
           
-  let map ?(g = S.empty) (query : Config.tuple list) = S.query g query
+  let map g (query : Config.tuple list) = S.query g query
 
 
-  let to_string graph  =
+  (*let to_string graph  =
     let dbList = S.to_list graph in
       let rec string_lst dbList =
           match dbList with
@@ -87,6 +86,6 @@ module Make(S: STORE):(GRAPH with type t = S.t) = struct
               | head :: rest ->
                 Helper.to_string head ^ "\n" ^
                 string_lst rest in
-    string_lst dbList ;;
+    string_lst dbList ;;*)
       
 end ;;

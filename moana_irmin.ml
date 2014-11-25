@@ -128,24 +128,18 @@ module G : GRAPH =
       
     type t = IS.t
     
-    let graph = IS.empty
+    let init = IS.init
+		
+		let graph = IS.empty
       
-    let add ?(g = graph) (tuple : Config.tuple) =
+    let add g (tuple : Config.tuple) =
       let s =
         Printf.sprintf "Adding fact to [ %s <- %s ]" IS.name
           (Helper.to_string tuple)
       in (print_endline s; IS.add g tuple)
       
-    let map ?(g = graph) (query : Config.tuple list) = IS.query g query
+    let map g (query : Config.tuple list) = IS.query g query
       
-    let to_string graph =
-      let dbList = IS.to_list graph in
-      let rec string_lst dbList =
-        match dbList with
-        | [] -> "Finished\n"
-        | head :: rest ->
-            (Helper.to_string head) ^ ("\n" ^ (string_lst rest))
-      in string_lst dbList
-      
+       
   end
   

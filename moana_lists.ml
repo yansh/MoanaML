@@ -45,13 +45,15 @@ module G : GRAPH = struct
   type t = LS.t
 
   let graph = LS.empty
+	
+	let init = LS.init
 
-  let add ?(g = graph) (tuple : Config.tuple) =
+  let add g (tuple : Config.tuple) =
     let s = Printf.sprintf "Adding fact to [ %s <- %s ]" LS.name (Helper.to_string tuple) in
     print_endline s;
     LS.add g tuple
 
-  let map ?(g = graph) (query : Config.tuple list) = LS.query g query
+  let map g (query : Config.tuple list) = LS.query g query
 
   let to_string graph  =
     let dbList = LS.to_list graph in
