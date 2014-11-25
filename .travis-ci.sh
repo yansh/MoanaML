@@ -9,4 +9,5 @@ export OPAMYES=1
 opam init 
 opam install ${OPAM_DEPENDS}
 eval `opam config env`
+ocamlfind list
 ./build.sh
