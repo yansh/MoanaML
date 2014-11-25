@@ -672,6 +672,24 @@ let test18 _ =
         
     end
   in  (*let p = Rete.print_bm Test.res_bm in*) assert_equal Test.res_bm Test.q_exp_res
+
+(** Testing Make functor **)
+let test19 _ =
+  let module G = Moana.Make(Moana_irmin.S) in let graph = G.init tuples in  
+  let query10 = [ q1; q2 ] and q10_exp_res = [ [ t1; t9 ] ] in
+  let res_q10 = G.map graph query10
+  in
+    (*let p = print_tuples_list res_q10 in let p1 = print_tuples_list q10_exp_resin*)
+    assert_equal q10_exp_res res_q10
+(** Same test as test 19, different backend store **)
+
+let test20 _ =
+  let module G = Moana.Make(Moana_lists.S) in let graph = G.init tuples in  
+  let query10 = [ q1; q2 ] and q10_exp_res = [ [ t1; t9 ] ] in
+  let res_q10 = G.map graph query10
+  in
+    (*let p = print_tuples_list res_q10 in let p1 = print_tuples_list q10_exp_resin*)
+    assert_equal q10_exp_res res_q10								
 let suite =
   "Unit tests" >:::
     [ "test0" >:: test0; "test1" >:: test1; "test2" >:: test2;
@@ -680,7 +698,7 @@ let suite =
       "test9" >:: test9; "test10" >:: test10; "test11" >:: test11;
       "test12" >:: test12; "test13" >:: test13; "test14" >:: test14;
       "test15" >:: test15; "test16" >:: test16;"test17" >:: test17;
-			"test18" >:: test18 ]
+			"test18" >:: test18;"test19" >:: test19;"test20" >:: test20 ]
   
 let _ = run_test_tt_main suite
   
