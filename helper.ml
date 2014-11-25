@@ -26,7 +26,20 @@ let to_string =
   | _ -> "Not printing this tuple."
   
 let value_to_str = function | Variable x -> x | Constant x -> x
-  
+
+(** compare two tuples **)
+let (=) t1 t2 = 
+	let s1 = to_string t1 in let s2 = to_string t2 in String.compare s1 s2
+
+module TupleMap = Map.Make (struct
+  type t = tuple
+  let compare = (=)
+end)
+
+module StringMap = Map.Make (struct
+  type t = string
+  let compare = String.compare
+end)                        
 (* FIX ME: Need to take care of Context, Signature and Timestamp *)
 let to_json =
   function
@@ -114,4 +127,4 @@ let to_tuple s =
 let str_query_list s =
   let queryBuffer = Lexing.from_string s
   in Query_parser.parse Query_lexer.lex queryBuffer
-	
+	    
