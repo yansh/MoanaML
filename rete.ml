@@ -281,7 +281,7 @@ let get_lst_value bm var =
        if var = v then value :: acc2 else acc2)
     bm.solutions []
   
-(** function to return a list of values for a particular variable in the solution (BM) **)
+(** deprecated: function to return a list of values for a particular variable in the solution (BM) **)
 let get_lst_values bm (vars : string list) = (* helper to print BM *)
   List.fold_right
     (fun var acc ->
@@ -294,23 +294,65 @@ let get_lst_values bm (vars : string list) = (* helper to print BM *)
        in if (List.length sols) <> 0 then [ (var, sols) ] @ acc else acc)
     vars []
   
+(** function to return a Map of values for a particular variable in the solution (BM) **)
+let get_values_map bm (vars : string list) = (* helper to print BM *)
+  List.fold_right
+    (fun var acc ->
+       let sols =
+         List.fold_right
+           (fun (v, (value, _)) acc2 ->
+              (* (string * (t element_type * tuple list) ) *)
+              if var = v then value :: acc2 else List.rev acc2)
+           bm.solutions []
+       in
+         if (List.length sols) <> 0
+         then Helper.StringMap.add var sols acc
+         else acc)
+    vars Helper.StringMap.empty
+  
 (*** given rete network get the current values associated with var **)
 let rec get_values rete_network (vars : string list) =
   (* check whether the variable has been found, return vars that still missing **)
-  let missing_vars values =
-    List.fold_right
-      (fun v acc ->
-         if (List.mem_assoc v values) == false then v :: acc else acc)
-      vars []
+  let missing_vars values_map =
+    List.filter (fun v -> not (Helper.StringMap.mem v values_map)) vars
   in
     match rete_network with
     | Node (_, bm, node) ->
-        let values = get_lst_values bm vars in
-        let mvars = missing_vars values in values @ (get_values node mvars)
+        let values_map = get_values_map bm vars in
+        let mvars = missing_vars values_map
+        in (Helper.StringMap.bindings values_map) @ (get_values node mvars)
     | Empty -> []
+
+(** generates a MAP with Var, Values pairs from the results **)
+   
+let get_res_map rete_network vars =
+  let res_map = Helper.StringMap.empty in
+  let result = get_values rete_network vars
+  in
+    List.fold_right
+      (fun (var, values) acc -> Helper.StringMap.add var values acc) result
+      res_map
   
 (** helper method accepts query string and runs it over tuples, 
 extracts the values associated with the var **)
 let exec_qry q tuples =
   let network = to_rete q (List.flatten tuples) in execute_rete network
+  
+let get_tuples network =
+  let tuples_set = Helper.TupleSet.empty
+  in
+    match network with
+    | Node (_, { solutions = sols }, _) ->
+        List.fold_right
+          (fun (_, var_sols) acc ->
+             let (_, tuples) = var_sols
+             in List.fold_right Helper.TupleSet.add tuples acc)
+          sols tuples_set
+    | Empty -> tuples_set
+  
+(** helper method accepts query string and runs it over tuples in a given BM, 
+extracts the values associated with the var **)
+let exec_bm q network =
+  let network = to_rete q (Helper.TupleSet.elements (get_tuples network))
+  in execute_rete network
   
