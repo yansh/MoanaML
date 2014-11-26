@@ -31,7 +31,7 @@ let value_to_str = function | Variable x -> x | Constant x -> x
 let (=) t1 t2 = 
 	let s1 = to_string t1 in let s2 = to_string t2 in String.compare s1 s2
 
-module TupleMap = Map.Make (struct
+module TupleSet = Set.Make (struct
   type t = tuple
   let compare = (=)
 end)
@@ -95,7 +95,17 @@ let rec print_tuples tuples =
   | head :: rest -> (print_endline (to_string head); print_tuples rest)
   
 let print_tuples_list tuples = List.map (fun t -> print_tuples t) tuples
-  
+
+(* helper function for printing out (variable, values) pairs *)	
+let print_var var values =
+  (print_endline var;
+   List.iter
+     (fun vl ->
+        match vl with
+        | Constant x -> print_endline x
+        | _ -> raise Wrong_value)
+     values)
+				  
 open Lexing
   
 
