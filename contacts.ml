@@ -13,8 +13,6 @@
 * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 *)
-
-
 (*** This is an implementation of a sample application - contacts
 
 The main functionality:
@@ -29,7 +27,7 @@ let jon =
     "{(a,fn,Jon Crowcroft,contacts)    
    (a,email,jon.crowcroft@cl.cam.ac.uk,contacts)
 	 (a,twitter,@tforcworc,contacts)
-   (a,title,Professor,contacts)
+   (a,title,Professor,contacts)	 
 	 (a,knows,b,contacts)
 	 (a,knows,c,contacts)
 	 (a,knows,d,contacts)
@@ -49,7 +47,7 @@ let amir =
   
 let anil =
   Helper.to_tuple_lst
-    "{(c,fn,Anil Madhavapeddy, contacts)    
+   "{(c,fn,Anil Madhavapeddy, contacts)    
    (c,email,anil@recoil.org,contacts)    
 	 (c,email,anil.madhavapeddy@recoil.org,contacts)
    (c,title,Lecturer,contacts)}"
@@ -68,32 +66,45 @@ let richard =
    (e,email,richard.mortier@nottingham.ac.uk,contacts)
 	 (e,twitter,@mort__,contacts)        
    (e,title,Lecturer,contacts)
-	 (e,knows,a,contacts)
 	 (e,knows,c,contacts)
 	 (e,knows,d,contacts)
+	}"
+  
+let policies =
+  Helper.to_tuple_lst "{
+	(b,canView,a,policies)
+	(c,canView,d,policies)	
 	}"
   
 let contacts = [ jon; amir; anil; carlos; richard ]
   
 (* sample query *)
-let q1 =
+let q2 =
   "MAP {
-	?y,knows,a,contacts
+	a,knows,?y,contacts
 	?y,fn,?name,contacts
 	?y,email,?email,contacts
 	}"
   
-let results = Rete.exec_qry q1 contacts 
-let r = Rete.get_values results [  "?y"; "?email" ;  "?name"] |>
-    (List.iter
-       (fun v ->
-          match v with
-          | (var, values) ->
-              print_endline var;
-               List.iter
-                 (fun vl ->
-                    match vl with
-                    | Constant x -> print_endline x
-                    | _ -> raise Wrong_value)
-                 values))							
+(* execute policy to bring all the tuples that b can view *)
+let q1 =
+  "MAP {
+	 b, canView,?x, policies
+	 ?x, knows, ?o, contacts
+	 ?o, email, ?email, contacts	 
+	 ?o, fn, ?n, contacts
+	}"
+  
+let results = (Rete.exec_qry q1 (policies :: contacts)) |> (Rete.exec_bm q2)
+  
+let (Rete.Node (_, res_bm, _)) = results
+  
+let p2 =
+  Helper.print_tuples (Helper.TupleSet.elements (Rete.get_tuples results))
+  
+let p = Rete.print_bm res_bm
+  
+let r_map = Rete.get_res_map results [ "?name"; "?y"; "?email" ]
+  
+let _ = Helper.StringMap.iter Helper.print_var r_map
   
