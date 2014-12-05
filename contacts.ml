@@ -24,11 +24,13 @@ open Config
   
 let jon =
   Helper.to_tuple_lst
-    "{(a,fn,Jon Crowcroft,contacts)    
+    "{(a,fn,Jon,contacts)
+	  (a,last,Crowcroft,contacts)    
    (a,email,jon.crowcroft@cl.cam.ac.uk,contacts)
 	 (a,twitter,@tforcworc,contacts)
-   (a,title,Professor,contacts)	 
-	 (a,knows,b,contacts)
+	 (a,mobile, 617-000-0001,contacts)
+   (a,title,Professor,contacts)	
+	 (a,image,jon.jpg, contacts)
 	 (a,knows,c,contacts)
 	 (a,knows,d,contacts)
 	 (a,knows,e,contacts)
@@ -36,9 +38,11 @@ let jon =
   
 let amir =
   Helper.to_tuple_lst
-    "{(b,fn,Amir Chaudhry, contacts)    
+    "{(b,fn,Amir, contacts)
+		(b,last,Chaudhry,contacts)    
    (b,email,amir.chaudhry@cl.cam.ac.uk,contacts)
 	 (b,twitter,@amirmc,contacts)
+	 (b,image,amir.jpg, contacts)
    (b,title,Postdoc,contacts)
    (b,knows,a,contacts)
    (b,knows,c,contacts)
@@ -47,23 +51,31 @@ let amir =
   
 let anil =
   Helper.to_tuple_lst
-   "{(c,fn,Anil Madhavapeddy, contacts)    
+    "{(c,fn,Anil, contacts)
+	  (c,last,Madhavapeddy, contacts)
    (c,email,anil@recoil.org,contacts)    
+	 (c,image,anil.jpg, contacts)
+	 (c,twitter,@avsm,contacts) 
 	 (c,email,anil.madhavapeddy@recoil.org,contacts)
    (c,title,Lecturer,contacts)}"
   
 let carlos =
   Helper.to_tuple_lst
-    "{(d,fn,Carlos Molina-jimenez, contacts)    
+    "{(d,fn,Carlos, contacts)
+	 (d,last,Molina-jimenez, contacts)
+	 (d,image,carlos.jpg, contacts)    
    (d,email,cm770@cam.ac.uk,contacts)        
    (d,title,Postdoc,contacts)
+	 (d,twitter,@carlos,contacts) 
 	 (d,knows,a,contacts)
 	 (d,knows,c,contacts)}"
   
 let richard =
   Helper.to_tuple_lst
-    "{(e,fn,Richard Mortier,contacts)    
+    "{(e,fn,Richard,contacts)    
+		(e,last,Mortier,contacts)
    (e,email,richard.mortier@nottingham.ac.uk,contacts)
+	 (e,image,mort.png, contacts)
 	 (e,twitter,@mort__,contacts)        
    (e,title,Lecturer,contacts)
 	 (e,knows,c,contacts)
@@ -78,6 +90,7 @@ let policies =
   
 let contacts = [ jon; amir; anil; carlos; richard ]
   
+(*let contacts = Helper.tuples_from_file "contacts.db"*)
 (* sample query *)
 let q2 =
   "MAP {
@@ -95,16 +108,17 @@ let q1 =
 	 ?o, fn, ?n, contacts
 	}"
   
-let results = (Rete.exec_qry q1 (policies :: contacts)) |> (Rete.exec_bm q2)
+
+let prnt = Helper.print_tuples_list contacts  
+let results = (Rete.exec_qry q1 (List.flatten contacts)) |> (Rete.exec_bm q2)
   
 let (Rete.Node (_, res_bm, _)) = results
   
-let p2 =
-  Helper.print_tuples (Helper.TupleSet.elements (Rete.get_tuples results))
-  
-let p = Rete.print_bm res_bm
-  
+(*let p2 =
+  Helper.print_tuples (Helper.TupleSet.elements (Rete.get_tuples results))*)
+(*let p = Rete.print_bm res_bm*)
 let r_map = Rete.get_res_map results [ "?name"; "?y"; "?email" ]
   
 let _ = Helper.StringMap.iter Helper.print_var r_map
   
+

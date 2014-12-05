@@ -1,5 +1,5 @@
 # Edit this for your own project dependencies
-OPAM_DEPENDS="ocamlfind ounit re core menhir yojson lwt irmin.0.8.3"
+OPAM_DEPENDS="ocamlfind ounit re core menhir yojson atdgen lwt irmin.0.8.3"
 	 
 ppa=avsm/ocaml42+opam12 
 echo "yes" | sudo add-apt-repository ppa:$ppa
@@ -11,3 +11,6 @@ opam install ${OPAM_DEPENDS}
 eval `opam config env`
 ocamlfind list
 ./build.sh
+
+
+

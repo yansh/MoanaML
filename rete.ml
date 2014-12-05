@@ -199,9 +199,10 @@ let join am bm =
 (*in
   let p = print_endline "BM-->" in
   let p2 = print_bm b in let p = print_endline "<---" in b*)
-type rete_dataflow = | Empty | Node of am * bm * rete_dataflow
+type rete_dataflow = | Empty | Node of am * bm * rete_dataflow | BNode of Config.tuple list
 
-let rete ams =
+(** gerenate RETE data lfow from  list of AMs **)
+let gen_rete ams =
   let first_am = List.hd ams in
   let empty_bm = { solutions = []; } in
   let tail = List.tl ams in
@@ -213,45 +214,43 @@ let rete ams =
       (List.rev tail) [ (first_am, (join first_am empty_bm)) ]
   in List.fold_right (fun (am, bm) acc -> Node (am, bm, acc)) res_list Empty
   
-(*** generate a list of (AM, ref rete_node) pairs ***)
-let rec mk_refs rete_network acc =
+(*** deprecated: generate a list of (AM, ref rete_node) pairs ***)
+(*let rec mk_refs rete_network acc =
   match rete_network with
   | Node (am, _, node) -> (am, (ref rete_network)) :: (mk_refs node acc)
-  | Empty -> acc
+  | Empty -> acc*)
+  
+(* NOTE: only compares 4 elements *)
+(* TODO: make sure to comapre against all elements *)
+let compare q tpl =
+  let ( = ) v1 v2 =
+    match (v1, v2) with
+    | (Variable _, _) -> true
+    | (Constant x, Constant y) -> if x = y then true else false
+    | (_, Variable _) -> false in
+  let { subj = s; pred = p; obj = o; ctxt = c; time_stp = _; sign = _ } = q
+
+  and { subj = q_s; pred = q_p; obj = q_o; ctxt = q_c; time_stp = _; sign = _
+    } = tpl
+  in (s = q_s) && ((p = q_p) && ((o = q_o) && (c = q_c)))
   
 (** add tuple to an existing AM **)
-(* FIX ME: remove AM from the parameters, replace by matching tuple to the AM *)
 (* FIX ME: implement efficient way to create new AM from the old one *)
-let add rete_network am tuple =
-  let node_refs = mk_refs rete_network []
-  in
-    try
-      let node_ref = List.assoc am node_refs in
-      let rec regen rete_network =
-        let get_bm node =
-          match node with
-          | Node (_, bm, _) -> bm
-          | Empty -> { solutions = []; }
-        in
-          match rete_network with
-          | Node (current_am, bm, node) ->
-              if rete_network <> !node_ref
-              then (*let p= print_bm  bm in*)
-                Node (current_am, (join current_am (get_bm (regen node))),
-                  node)
-              else
-                (let new_am =
-                   create_am current_am.pattern (tuple :: current_am.tuples)
-                 in
-                   (*let p = print_bm (join new_am (get_bm node)) in*)
-                   (node_ref :=
-                      Node (new_am, (join new_am (get_bm node)), node);
-                    !node_ref))
-          | Empty -> Empty
-      in regen rete_network
-    with
-    | (*let (_, p_node) = List.hd node_refs in execute_rete !p_node*)
-        Not_found -> Empty
+let add rete_network tuple =
+  let get_bm node =
+    match node with | Node (_, bm, _) -> bm | Empty -> { solutions = []; } in
+  let rec regen rete_network =
+    match rete_network with
+    | Node (current_am, _, node) ->
+        if not (compare current_am.pattern tuple)
+        then (*let p= print_bm  bm in*)
+          Node (current_am, (join current_am (get_bm (regen node))), node)
+        else
+          (let new_am =
+             create_am current_am.pattern (tuple :: current_am.tuples)
+           in Node (new_am, (join new_am (get_bm node)), node))
+    | Empty -> Empty
+  in regen rete_network
   
 (*** given rete network start activations **)
 let rec execute_rete rete_network =
@@ -271,7 +270,7 @@ let execute_am_list ams =
 (** function to create rete newtork from a query **)
 let to_rete str tuples =
   let qs = Helper.str_query_list str in
-  let ams = List.map (fun q -> create_am q tuples) qs in rete ams
+  let ams = List.map (fun q -> create_am q tuples) qs in gen_rete ams
   
 (** function to return a list of values for a particular variable in the solution (BM) **)
 let get_lst_value bm var =
@@ -310,7 +309,7 @@ let get_values_map bm (vars : string list) = (* helper to print BM *)
          else acc)
     vars Helper.StringMap.empty
   
-(*** given rete network get the current values associated with var **)
+(** given rete network get the current values associated with var **)
 let rec get_values rete_network (vars : string list) =
   (* check whether the variable has been found, return vars that still missing **)
   let missing_vars values_map =
@@ -322,9 +321,8 @@ let rec get_values rete_network (vars : string list) =
         let mvars = missing_vars values_map
         in (Helper.StringMap.bindings values_map) @ (get_values node mvars)
     | Empty -> []
-
+  
 (** generates a MAP with Var, Values pairs from the results **)
-   
 let get_res_map rete_network vars =
   let res_map = Helper.StringMap.empty in
   let result = get_values rete_network vars
@@ -336,7 +334,7 @@ let get_res_map rete_network vars =
 (** helper method accepts query string and runs it over tuples, 
 extracts the values associated with the var **)
 let exec_qry q tuples =
-  let network = to_rete q (List.flatten tuples) in execute_rete network
+  let network = to_rete q tuples in execute_rete network
   
 let get_tuples network =
   let tuples_set = Helper.TupleSet.empty

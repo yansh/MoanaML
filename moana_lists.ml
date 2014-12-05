@@ -53,9 +53,10 @@ module G : GRAPH = struct
     print_endline s;
     LS.add g tuple
 
-  let map g (query : Config.tuple list) = LS.query g query
+  let map g (query : Config.tuple list) = LS.query g query (*|>  Helper.flatten_tuple_list |> LS.init*) 
+				
 
-  let to_string graph  =
+  (*let to_string graph  =
     let dbList = LS.to_list graph in
       let rec string_lst dbList =
           match dbList with
@@ -63,5 +64,5 @@ module G : GRAPH = struct
               | head :: rest ->
                 Helper.to_string head ^ "\n" ^
                 string_lst rest in
-    string_lst dbList
+    string_lst dbList *)
 end
