@@ -499,7 +499,7 @@ let test10 _ =
       let am_list = [ am1; am2; am3; am4 ]
         
       (*let p = print_mappings am2*)
-      let res_rete_network = rete am_list
+      let res_rete_network = gen_rete am_list
         
       let (Node (_, res_bm, _)) = execute_rete res_rete_network
         
@@ -568,9 +568,9 @@ let test13 _ =
       let am_list = [ am1; am2; am3; am4 ]
         
       (*let p = print_mappings am2*)
-      let rete_network = rete am_list
+      let rete_network = gen_rete am_list
         
-      let (Node (_, res_bm, _)) = add rete_network am1 t12
+      let (Node (_, res_bm, _)) = add rete_network t12
         
     end
   in (*let p = print_bm res_bm in*) assert_equal Test.res_bm Test.q_exp_res
@@ -681,6 +681,7 @@ let test19 _ =
   in
     (*let p = print_tuples_list res_q10 in let p1 = print_tuples_list q10_exp_resin*)
     assert_equal q10_exp_res res_q10
+
 (** Same test as test 19, different backend store **)
 
 let test20 _ =
@@ -689,7 +690,19 @@ let test20 _ =
   let res_q10 = G.map graph query10
   in
     (*let p = print_tuples_list res_q10 in let p1 = print_tuples_list q10_exp_resin*)
-    assert_equal q10_exp_res res_q10								
+    assert_equal q10_exp_res res_q10
+
+(** Same test as test 19, different backend store **)
+
+(*let test21 _ =
+	let query10 = [ q1; q2 ] and q10_exp_res = [ [ t1; t9 ] ] in
+  let module G = Moana.Make(Moana_rete.S) in let graph = G.init tuples in    
+  let res_q10 = G.map graph query10
+  in
+    (*let p = print_tuples_list res_q10 in let p1 = print_tuples_list q10_exp_resin*)
+    assert_equal q10_exp_res res_q10  *)                              
+
+																																								
 let suite =
   "Unit tests" >:::
     [ "test0" >:: test0; "test1" >:: test1; "test2" >:: test2;
