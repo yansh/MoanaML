@@ -36,12 +36,14 @@ rule lex = parse
   | [' ' '\t' '\n']      { lex lexbuf }
 	| newline         { next_line lexbuf; lex lexbuf }
   | ","             { COMMA }
+	| "["							{ LEFT_SQUARE_BRACE}
   | "("             { LEFT_BRACE }
 	| "{"             {START}
-  |['a'-'z' 'A'-'Z' '0'-'9' '_']*[' ']?['a'-'z' 'A'-'Z' '0'-'9' '_' '@' '.' '-']+ as s { STRING (s) }
+  |['a'-'z' 'A'-'Z' '0'-'9' '_' '@' '.' '-']*[' ']?['a'-'z' 'A'-'Z' '0'-'9' '_' '@' '.' '-']+ as s { STRING (s) }
   | '?' ['A'-'Z' 'a'-'z' '_']* as v { VAR (v) }   	 
   | ")"             { RIGHT_BRACE }
 	| "}"             {END}
+	| "]"							{RIGHT_SQUARE_BRACE}
 	| _               { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
   | eof             { EOF }
 
