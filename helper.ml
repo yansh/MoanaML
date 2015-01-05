@@ -94,14 +94,61 @@ let print_value =
        print_string x;
        print_string ") ";
        print_endline "")
-  
+
+(**
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ Converts a single tuple like < c fn Anil> < c last Madhavapeddy> ...
+ < c title Lecturer > into a string and returns the resulting string.
+ *)
+let tupleToStr tuple=
+  let rec help str tuple= match tuple with
+  | []      -> str^"\n--nextContact--\n"
+  | h::rest -> help (str^(to_string h)^"\n") rest 
+  in help "" tuple
+
+(**
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ Returns an integer: the length of the list which contains 
+ strings that represent tuples
+ *)
+ let lengthofTupleLst tupleLst = 
+    let lst= List.map (fun t -> tupleToStr t) tupleLst in
+    List.length lst
+
+(**
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ Returns a string: the results of converting a list of strings 
+ like [s1;s2;s3] into a single string s= s1^s2^s3 
+ *)
+ let listofStrToStr lst= 
+     let rec help str lst= match lst with
+     | []      -> str^"\nNo more contacts\n"
+     | h::rest -> help (str^h) rest 
+     in help "" lst
+
+(**
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ Returns a string: the result of converting a list of tuples 
+ into a string
+ *)
+ let listoftuples_to_str tuples= 
+    let lst= List.map (fun t -> tupleToStr t) tuples in
+    listofStrToStr lst
+
+
 let rec print_tuples tuples =
   match tuples with
   | [] -> print_endline "--"
   | head :: rest -> (print_endline (to_string head); print_tuples rest)
   
 let print_tuples_list tuples = List.map (fun t -> print_tuples t) tuples
-  
+ 
+
+ 
 (* helper function for printing out (variable, values) pairs *)
 let print_var var values =
   (print_endline var;

@@ -89,6 +89,7 @@ let policies =
 	}"
   
 let contacts = [ jon; amir; anil; carlos; richard ]
+
   
 (*let contacts = Helper.tuples_from_file "contacts.db"*)
 (* sample query *)
@@ -107,18 +108,82 @@ let q1 =
 	 ?o, email, ?email, contacts	 
 	 ?o, fn, ?n, contacts
 	}"
+
+
+let prnt() = Helper.print_tuples_list contacts  
+
+
+(**
+ prints the length of the tuple list.
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ *) 
+let prntlengthofTupleLst() = print_string("\n Results from Helper.prntlengthofTupleLst: ");
+           print_int(Helper.lengthofTupleLst contacts);;
+
+(**
+ prints the contents of the contact repository.
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ *)
+let prntStrTuples() = print_string("\n Results from Helper.listoftuples_to_str: \n");
+           print_string(Helper.listoftuples_to_str contacts);;
+
+(**
+ returns an integer: the length of the tuple list.
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ *) 
+let lengthofTupleLst() = Helper.lengthofTupleLst contacts;;
+
+(**
+ returns a string: the content of the contact repository.
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ *)
+let getStrOfTuples() = Helper.listoftuples_to_str contacts;;
   
 
-let prnt = Helper.print_tuples_list contacts  
+
 let results = (Rete.exec_qry q1 (List.flatten contacts)) |> (Rete.exec_bm q2)
+
+(**
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ returns ...
+ pquery: policy query
+ qry:    query 
+ *)
+let qresults pqry qry= (Rete.exec_qry pqry (List.flatten contacts)) |> (Rete.exec_bm qry)
+
   
-let (Rete.Node (_, res_bm, _)) = results
+(* let (Rete.Node (_, res_bm, _)) = results *)
+
+(**
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ returns ...
+ pquery: policy query
+ qry:    query 
+ *)
+let (Rete.Node (_, res_bm, _)) = qresults q1 q2
   
 (*let p2 =
   Helper.print_tuples (Helper.TupleSet.elements (Rete.get_tuples results))*)
 (*let p = Rete.print_bm res_bm*)
 let r_map = Rete.get_res_map results [ "?name"; "?y"; "?email" ]
-  
-let _ = Helper.StringMap.iter Helper.print_var r_map
-  
+
+(*  
+ * let _ = Helper.StringMap.iter Helper.print_var r_map
+ *) 
+
+
+(**
+ returns a string: a concatenation of the string with itself. I
+ used it for testing.
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ *)
+let duplicatestr s= s^s
+
 
