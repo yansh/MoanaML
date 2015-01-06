@@ -1,9 +1,17 @@
 #!/bin/bash
 
-# author: Carlos Molina Jimenez
-# date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+#
+# Author: Carlos Molina-Jimenez, 6 Jan 2015, Computer Lab. Univ. of Cambridge
+# 
+# This build.sh uses only findlib compliant libraries. It compiles
+# correctly yansh/MoanaML.
 #
 
 eval `opam config env`
 
-ocamlbuild -r -use-ocamlfind -use-menhir -classic-display -package core,async,cohttp.async,lwt,yojson,atdgen,irmin.unix,irmin.backend,irmin.server,git.unix,irmin.unix,sexplib.syntax,comparelib.syntax,bin_prot.syntax -tag thread server_moanairmin.byte
+ocamlbuild -r -use-ocamlfind -use-menhir -classic-display -package lwt,yojson,atdgen,irmin,irmin.backend,irmin.server,git.unix,irmin.unix -tag thread  tests.byte contacts.byte
+
+
+./tests.byte
+./contacts.byte
+
