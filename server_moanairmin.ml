@@ -81,6 +81,16 @@ let handler ~body:_ _sock req =
     |> Option.value ~default:"No param repositoryname supplied"
     |> Server.respond_with_string 
 
+  | "/getwholemap" -> Uri.get_query_param uri "repositoryname"
+    |> Option.map ~f:(fun s-> Contacts.getWhole_r_map())
+    |> Option.value ~default:"No param repositoryname supplied"
+    |> Server.respond_with_string 
+
+  (* | "/query" -> Uri.get_query_param uri "subject"
+    |> Option.map ~f:(fun s-> Contacts.query_r_map_def_plcy s "email")
+    |> Option.value ~default:"No param subject supplied"
+    |> Server.respond_with_string 
+   *)
   | _ ->
     Server.respond_with_string ~code:`Not_found "Route not found"
 
