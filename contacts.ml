@@ -111,25 +111,29 @@ let q1 =
 	}"
 
 (**
- Policy to used as default when the user omits the policy pamateter in
- the query. 
+ Policy to used as default for user d (carlos) when the policy parameter in
+ the query is not specified. 
  @author: Carlos Molina-Jimenez 
  @date:   13 Jan 2015, Computer Laboratory, Univ. of Cambridge
  *) 
-let defaultPolicy=  (* q1 *)
+let defPlcy=  (* q1 *)
   "MAP {
-	a,knows,?y,contacts
-	?y,fn,?name,contacts
-	?y,email,?email,contacts
+	 d, canView,?x, policies
+	 ?x, knows, ?o, contacts
+	 ?o, email, ?email, contacts	 
+	 ?o, fn, ?n, contacts
 	}"
 
+
 (**
- Defaul query variable and context
+ Default subject, predicate, query variable and context
  @author: Carlos Molina-Jimenez 
- @date:   13 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ @date:   15 Jan 2015, Computer Laboratory, Univ. of Cambridge
  *) 
-let defaultQvar=  "?y" 
-let defaultContx= "contacts"
+let defSubj= "d" 
+let defPred= "email" 
+let defQvar= "?y" 
+let defCntx= "contacts"
 
 
 
@@ -256,8 +260,6 @@ let prtTuple() =
     print_string(Helper.tupleToStr "?email" (Helper.StringMap.find "?email" r_map));; 
 
 
-
-
 (**
  @author: Carlos Molina-Jimenez 
  @date:   13 Jan 2015, Computer Laboratory, Univ. of Cambridge
@@ -273,6 +275,7 @@ let getWhole_r_map() =
     Helper.mapLstToStr (Helper.StringMap.bindings r_map) 
 
 
+
 (**
  @author: Carlos Molina-Jimenez 
  @date:   8 Jan 2015, Computer Laboratory, Univ. of Cambridge
@@ -282,7 +285,7 @@ let getWhole_r_map() =
  [("k1",[Constant "Ali"; Constant "Bob"]); (k2,[Constant "a"; Constant "b"; Constant "c"])],
  conversts it into a single string and prints it.
  *)
-let prtWhole_r_map() = 
+let prt_getWhole_r_map() = 
          print_string("\n\n The content of the whole map is: \n\n"); 
          print_string(Helper.mapLstToStr (Helper.StringMap.bindings r_map));; 
 
@@ -291,6 +294,7 @@ let print_r_map q1 q2 =
          print_string("\n\n The content of print_r_map is: \n\n"); 
          print_string(Helper.mapLstToStr (Helper.StringMap.bindings (buildr_map q1 q2)));; 
 
+
 (**
  @author: Carlos Molina-Jimenez 
  @date:   13 Jan 2015, Computer Laboratory, Univ. of Cambridge
@@ -298,14 +302,46 @@ let print_r_map q1 q2 =
  request (represented by q1) into a single string.
  policy is an optional parameter that defaults to defaultPolicy. 
  *)
- let print_r_map_def_polcy ?policy q1= 
-    let plcy= match policy with 
-        | None             -> defaultPolicy
+ let prnt_r_map_def_plcy ?plcy q1= 
+    let plcy= match plcy with 
+        | None             -> defPlcy
         | Some givenPolicy -> givenPolicy   in
-        print_string("\n\n Content of print_r_map is: \n\n"); 
+        print_string("\n\n Content of print_r_map with ?policy q1 is: \n\n"); 
         print_string(Helper.mapLstToStr (Helper.StringMap.bindings (buildr_map plcy q1)));; 
 
 
+
+(**
+ @author: Carlos Molina-Jimenez 
+ @date:   15 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ prints a string that results from the conversion of the response to a query 
+ request (represented by ?subj ?pred ?qvar ?contx and applied under the
+ ?policy) into a single string.
+ *)
+ let prnt_query_r_map_defPara ?plcy ?subj ?pred ?qvar ?cntx= 
+    print_string("\n\n I'm print_r_map_def_plcy.................\n");  
+    let plcy= match plcy with
+        | None                  -> defPlcy
+        | Some givenPolicy      -> givenPolicy      in
+    let subj= match subj with
+        | None                  -> defSubj
+        | Some givenSubject     -> givenSubject     in
+    let pred= match pred with
+        | None                  -> defPred
+        | Some givenPredicate   -> givenPredicate   in
+    let qvar= match qvar with
+        | None                  -> defQvar
+        | Some givenQvar        -> givenQvar        in
+    let cntx= match cntx with
+        | None                  -> defCntx
+        | Some givenContx       -> givenContx       in 
+    let qry = Helper.makeQuery subj pred qvar cntx  in
+   
+     print_string("\n\n The query is: "^ qry); 
+     print_string("\n\n The result is: "); 
+     print_string(Helper.mapLstToStr (Helper.StringMap.bindings (buildr_map plcy qry))) 
+
+
 (**
  @author: Carlos Molina-Jimenez 
  @date:   13 Jan 2015, Computer Laboratory, Univ. of Cambridge
@@ -313,51 +349,70 @@ let print_r_map q1 q2 =
  request (represented by subj pred ?qvar ?contx and applied under the
  ?policy) into a single string.
  *)
- let print_r_map_def_plcy ?policy subj pred ?qvar ?contx=
-    let plcy= match policy with 
-        | None             -> defaultPolicy
-        | Some givenPolicy -> givenPolicy   in
-    let qryvar= match qvar with
-        | None             -> defaultQvar
-        | Some givenQvar   -> givenQvar     in
-    let context= match contx with
-        | None             -> defaultContx
-        | Some givenContx  -> givenContx    in 
-    let qry = Helper.makeQuery subj pred qryvar context in
-
-     print_string("\n\n Content of print_r_map is: \n\n"); 
-     print_string(Helper.mapLstToStr (Helper.StringMap.bindings (buildr_map plcy qry)));; 
-
-(**
- @author: Carlos Molina-Jimenez 
- @date:   13 Jan 2015, Computer Laboratory, Univ. of Cambridge
- returns a string that results from the conversion of the response to a query 
- request (represented by subj pred ?qvar ?contx and applied under the
- ?policy) into a single string.
- *)
- let query_r_map_def_plcy ?policy subj pred ?qvar ?contx=
-    let plcy= match policy with 
-        | None             -> defaultPolicy
-        | Some givenPolicy -> givenPolicy   in
-    let qryvar= match qvar with
-        | None             -> defaultQvar
-        | Some givenQvar   -> givenQvar     in
-    let context= match contx with
-        | None             -> defaultContx
-        | Some givenContx  -> givenContx    in 
-    let qry = Helper.makeQuery subj pred qryvar context in
+ let query_r_map_defPara ?plcy ?subj ?pred ?qvar ?cntx =
+    let plcy= match plcy with
+        | None                  -> defPlcy
+        | Some givenPolicy      -> givenPolicy      in
+    let subj= match subj with
+        | None                  -> defSubj
+        | Some givenSubject     -> givenSubject     in
+    let pred= match pred with
+        | None                  -> defPred
+        | Some givenPredicate   -> givenPredicate   in
+    let qvar= match qvar with
+        | None                  -> defQvar
+        | Some givenQvar        -> givenQvar        in
+    let cntx= match cntx with
+        | None                  -> defCntx
+        | Some givenContx       -> givenContx       in 
+    let qry = Helper.makeQuery subj pred qvar cntx  in
 
     Helper.mapLstToStr (Helper.StringMap.bindings (buildr_map plcy qry)) 
+
+
         
+(**
+ @author: Carlos Molina-Jimenez 
+ @date:   15 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ prints a string that results from the conversion of the response to a query 
+ request (represented by ?subj ?pred ?qvar ?cntx and applied under the
+ policy ?plcy) into a single string.
+ *)
+ let prnt_query_r_map_defPrm ?(plcy=defPlcy) ?(subj=defSubj) ?(pred=defPred) ?(qvar=defQvar) ?(cntx=defCntx)= 
+    print_string("\n\n I'm print_r_map_def_plcy.................\n");  
+
+    let qry = Helper.makeQuery subj pred qvar cntx in
+   
+    print_string("\n\n The query is: "^ qry); 
+    print_string("\n\n The result is: "); 
+    print_string(Helper.mapLstToStr (Helper.StringMap.bindings (buildr_map plcy qry))) 
+
+
+
+(**
+ @author: Carlos Molina-Jimenez 
+ @date:   15 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ returns a string that results from the conversion of the response to a query 
+ request (represented by ?subj ?pred ?qvar ?cntx and applied under the
+ policy ?plcy) into a single string.
+ *)
+ let query_r_map_defPrm ?(plcy=defPlcy) ?(subj=defSubj) ?(pred=defPred) ?(qvar=defQvar) ?(cntx=defCntx)= 
+
+    let qry = Helper.makeQuery subj pred qvar cntx in
+   
+    "qry= " ^ qry ^ " resp= " ^ (Helper.mapLstToStr (Helper.StringMap.bindings (buildr_map plcy qry))) 
+
+
  
 (**
  @author: Carlos Molina-Jimenez 
  @date:   8 Jan 2015, Computer Laboratory, Univ. of Cambridge
  *) 
-let prtvarString() =   
-  print_string("\n\n The first string is: \n\n"); 
-  print_string(List.hd (Helper.tupleLstToStrLst "Ali" (Helper.StringMap.find "?name" r_map)));; 
+ let prtvarString() =   
+   print_string("\n\n The first string is: \n\n"); 
+   print_string(List.hd (Helper.tupleLstToStrLst "Ali" (Helper.StringMap.find "?name" r_map)));; 
   
+
 
 (**
  returns a string: a concatenation of the string with itself. I
