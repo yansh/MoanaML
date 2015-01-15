@@ -13,17 +13,24 @@
             
  @compilation: build.sh
 
- @Execution: % server_moanairmin
+ @Execution: % ser.byte
              Listening for HTTP on port 8080
              Try: 'curl http://localhost:8080/printcontacts?repositoryname=noname'
              
-             % curl http://localhost:8080/printcontacts?repositoryname=noname
-             < a fn Jon >
-             < a last Crowcroft > 
-             ...
-             No more contacts                 
+   % curl http://localhost:8080/printcontacts?repositoryname=noname
+          < a fn Jon >
+          < a last Crowcroft > 
+           ...
+           No more contacts                 
+
+   % curl http://localhost:8080/getwholemap?repositoryname=abc  
+
+   % curl "http://localhost:8080/query?subject=d&predicate=email" 
+
+   % curl "http://localhost:8080/query?subject=a&predicate=email"
 
 *)
+
 
 open Core.Std
 open Async.Std 
@@ -86,11 +93,25 @@ let handler ~body:_ _sock req =
     |> Option.value ~default:"No param repositoryname supplied"
     |> Server.respond_with_string 
 
-  (* | "/query" -> Uri.get_query_param uri "subject"
-    |> Option.map ~f:(fun s-> Contacts.query_r_map_def_plcy s "email")
-    |> Option.value ~default:"No param subject supplied"
-    |> Server.respond_with_string 
-   *)
+
+ | "/query" -> Uri.get_query_param uri "subject"
+    |> fun someSubj -> let sbj= match someSubj with
+       | None       -> raise (Failure "subject name is empty")
+       | Some subj  -> subj
+       in sbj 
+    |> fun sbj -> let prd= match Uri.get_query_param uri "predicate" with
+       | None      -> raise (Failure "predicate is empty")
+       | Some pred -> pred
+       (* in Some (sbj ^ "/" prd) *)
+       in Some (sbj,prd) 
+ 
+    |> Option.map ~f:(fun sbjprd-> Contacts.query_r_map_defPrm 
+        ?plcy:(None) ~subj:(fst(sbjprd)) ~pred:(snd(sbjprd)) ?qvar:(None) ?cntx:(None))
+
+    |> Option.value ~default:"No sub or pred parammeters supplied"
+    |> Server.respond_with_string
+
+
   | _ ->
     Server.respond_with_string ~code:`Not_found "Route not found"
 
