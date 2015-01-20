@@ -1,0 +1,47 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/xhtml+xml; charset=UTF-8" />
+  <title>Tutorial</title>
+  <script type="text/javascript">
+<!--
+var worker = new Worker ("jsContacts.js");
+var worker_handler = new Object ();
+
+worker.onmessage = function (m) {
+    if (typeof m.data == 'string') {
+        console.log("" + m.data);
+    } else {
+        console.log ("[ASYNCH] back from " + m.data.fname);
+        var handler = worker_handler[m.data.fname];
+        handler (m.data.result);
+    }
+}
+
+function ASYNCH (action_name, action_args, cont) {
+    worker_handler[action_name] = cont;
+    worker.postMessage ({fname: action_name, args: action_args});
+    console.log ("[ASYNCH] " + action_name + " (" + action_args + ")");
+}
+
+function convert_nnf () {
+  var txt = document.getElementById ("query").value;
+  ASYNCH ("runQuery", [txt], function (resp) { document.getElementById ("result").value  = resp;})
+}
+//-->
+</script>
+</head>
+
+<body>
+<textarea id="query" rows="2" cols="40">
+  MAP {
+	?y,knows,a,contacts
+	?y,fn,?name,contacts
+	?y,email,?email,contacts
+	}</textarea>
+Result:
+<textarea id="result" rows="2" cols="40">
+</textarea>
+<button onclick="convert_nnf()">Run query</button>
+</body>
+
+</html>
