@@ -46,7 +46,8 @@ sig
 	(* add fact as a tuple *)
 	val add : t -> Config.tuple -> t
 	
-	(* specify a query as list of tuple, this will return a matching list of *)
+	(* specify a query as list of tuple, *)
+	(* this will a new store with mathching tuples *)
 	val map : t -> Config.tuple list -> Config.tuple list list
 	
 
@@ -63,7 +64,7 @@ module Make : functor (S: STORE) ->
 		
 		val add: t -> Config.tuple -> t
 		
-		val map: t -> Config.tuple list -> Config.tuple list list;;
+		val map: t -> Config.tuple list -> Config.tuple list list
 		
 	end;;
 

@@ -2,7 +2,7 @@
 
 #
 # Author: Carlos Molina-Jimenez, 6 Jan 2015, Computer Lab. Univ. of Cambridge
-# 
+#
 # This build.sh uses only findlib compliant libraries. It compiles
 # correctly yansh/MoanaML.
 #
@@ -14,4 +14,3 @@ ocamlbuild -r -use-ocamlfind -use-menhir -classic-display -package lwt,yojson,at
 
 ./tests.byte
 ./contacts.byte
-

@@ -56,7 +56,7 @@ module type GRAPH =
     val add : t -> Config.tuple -> t
       
     (* specify a query as list of tuple, this will return a matching list of *)
-    val map : t -> Config.tuple list -> Config.tuple list list     
+    val map : t -> Config.tuple list -> Config.tuple list list
                     
   end;;
 
@@ -75,7 +75,7 @@ module Make(S: STORE):(GRAPH with type t = S.t) = struct
      S.add g tuple ;;
      
           
-  let map g (query : Config.tuple list) = S.query g query
+  let map g (query : Config.tuple list) = S.query g query (*|>  Helper.flatten_tuple_list |> S.init*) 
 
 
   (*let to_string graph  =
