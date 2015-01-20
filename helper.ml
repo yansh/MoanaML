@@ -45,6 +45,7 @@ module StringMap =
 
                    let compare = String.compare
                       end)
+
   
 (* FIX ME: Need to take care of Context, Signature and Timestamp *)
 let to_json =
@@ -94,15 +95,119 @@ let print_value =
        print_string x;
        print_string ") ";
        print_endline "")
-  
+
+(**
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ Converts a single tuple like < c fn Anil> < c last Madhavapeddy> ...
+ < c title Lecturer > into a string and returns the resulting string.
+ *)
+let tupleToStr tuple=
+  let rec help str tuple= match tuple with
+  | []      -> str^"\n--nextContact--\n"
+  | h::rest -> help (str^(to_string h)^"\n") rest 
+  in help "" tuple
+
+(**
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ Returns an integer: the length of the list which contains 
+ strings that represent tuples
+ *)
+ let lengthofTupleLst tupleLst = 
+    let lst= List.map (fun t -> tupleToStr t) tupleLst in
+    List.length lst
+
+(**
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ Returns a string: the results of converting a list of strings 
+ like [s1;s2;s3] into a single string s= s1^s2^s3 
+ *)
+ let listofStrToStr lst= 
+     let rec help str lst= match lst with
+     | []      -> str^"\nNo more contacts\n"
+     | h::rest -> help (str^h) rest 
+     in help "" lst
+
+(**
+ @author: Carlos Molina 
+ @date:   5 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ Returns a string: the result of converting a list of tuples 
+ into a string
+ *)
+ let listoftuples_to_str tuples= 
+    let lst= List.map (fun t -> tupleToStr t) tuples in
+    listofStrToStr lst
+
+
+(**
+ @author: Carlos Molina-Jimenez 
+ @date:   13 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ Returns a string: a query to be presented to a rete map. 
+ *) 
+ let makeQuery subj pred qryvar context=
+    "MAP{" ^ subj ^ "," ^ pred ^ "," ^ qryvar ^ "," ^ context ^ "}";;
+
+(****************)
+
+(**
+ @author: Carlos Molina 
+ @date:   8 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ returns a string: the result of converting
+ Constant str into str
+ *)
+let constStrToStr constStr= match constStr with
+    | Constant value -> "\n"^value
+    | _              -> raise Wrong_value
+
+
+(**
+ @author: Carlos Molina 
+ @date:   8 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ returns a list of stringis: the result of converting a tuple 
+ (a key value pair) like "simon" [Constant "marco"; Constant "defino"]
+ into a list like ["simon: "; "marco"; "delfino"]
+ *)
+let tupleLstToStrLst var lst= 
+    let resLst= List.map constStrToStr lst in
+    (var^":")::resLst
+
+(**
+ @author: Carlos Molina 
+ @date:   8 Jan 2015, Computer Laboratory, Univ. of Cambridge
+ returns a string: the result of converting a tuple 
+ (a key value pair) like "simon" [Constant "marco"; Constant "defino"]
+ into a string like "simon: marco delfino"
+ *)
+let tupleToStr var lst= 
+    let resLst= List.map constStrToStr lst in
+    listofStrToStr((var^":")::resLst)
+
+let tupleToString tuple=
+    let var= fst(tuple) in
+    let lst= snd(tuple) in
+    tupleToStr var lst
+
+let mapLstToStr mapLst= listofStrToStr (List.map tupleToString mapLst) 
+
+
+
 let rec print_tuples tuples =
   match tuples with
   | [] -> print_endline "--"
   | head :: rest -> (print_endline (to_string head); print_tuples rest)
   
 let print_tuples_list tuples = List.map (fun t -> print_tuples t) tuples
-  
+ 
+
+ 
 (* helper function for printing out (variable, values) pairs *)
+(* 
+ *var is a string, for example "abc", "?email", etc.
+ *x is a string: Anil, Carlos, cm770@cam.ac.uk, a, b ,c
+ *)
+
 let print_var var values =
   (print_endline var;
    List.iter
@@ -111,7 +216,20 @@ let print_var var values =
         | Constant x -> print_endline x
         | _ -> raise Wrong_value)
      values)
+
+
+let valuesToStr_var var values =
+  let lst= List.map
+     (fun vl ->
+        match vl with
+        | Constant x ->  x
+        | _ -> raise Wrong_value)
+     values in 
+   var^" ..."^(List.hd lst)  
+ 
+(* let lstResultsToStr lst= *)
   
+ 
 open Lexing
   
 let print_position outx lexbuf =
