@@ -9,6 +9,7 @@
 
 eval `opam config env`
 
+#note: currently this only works with Irmin 0.8.3
 ocamlbuild -r -use-ocamlfind -use-menhir -classic-display -package lwt,yojson,atdgen,irmin,irmin.backend,irmin.server,git.unix,irmin.unix -tag thread  tests.byte contacts.byte
 
 
