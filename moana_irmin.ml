@@ -23,20 +23,18 @@ open Lwt
 open Irmin_unix
   
 open Config
-  
-module Git =
-  IrminGit.FS(struct let root = Some "/tmp/irmin/moana"
-
-                        let bare = true
-                           end)
-  
+    
 (* Values are Strings * *)
-module Store = Git.Make(IrminKey.SHA1)(IrminContents.String)(IrminTag.String)
-  
+(*module Store = Git.MaKe(IrminKey.SHA1)(IrminContents.String)(IrminTag.String)*)
+module Store = Irmin.Basic (Irmin_git.FS) (Irmin.Contents.String);;
+let config = Irmin_git.config ~root:"/tmp/irmin/test" ~bare:true ();;
+
+module View = Irmin.View(Store)
+
 module TupleView =
   struct
     type t2 = Config.tuple
-    
+     
     type t = t2 list
     
     (* create list of tuples from view *)
@@ -44,33 +42,32 @@ module TupleView =
       let aux acc i =
         let i = string_of_int i
         in
-          (Store.View.read_exn v [ i ]) >>=
+          (View.read_exn v [ i ]) >>=
             (fun x -> return ((Helper.from_json x) :: acc))
       in
-        (Store.View.list v [ [] ]) >>=
+        (View.list v []) >>= 
           (fun key_list ->
              let keys =
                List.map
                  (function | [ i ] -> int_of_string i | _ -> assert false)
                  key_list
              in Lwt_list.fold_left_s aux [] keys)
-      
+    
+			let fmt t x = Printf.ksprintf (fun str -> t str) x  
     (* create view from list of tuples *)
     let view_of_t tuples =
-      (Store.View.create ()) >>=
-        (fun v ->
-           (Lwt_list.iteri_s
+       View.create task >>= 
+        fun v ->
+           Lwt_list.iteri_s
               (fun i tuple ->
                  let i = string_of_int i
                  in
                    (* let p=print_endline (Yojson.Basic.to_string (to_json  *)
-                   (* () tpl)) in                                           *)
-                   Store.View.update v [ i ]
-                     (Yojson.Basic.to_string (Helper.to_json tuple)))
-              tuples)
+                   (* () tpl)) in                                           *) 
+                   View.update (fmt v "update %s/x" i) [ i ] (Yojson.Basic.to_string (Helper.to_json tuple))) tuples
              >>=
-             (fun () -> (*print_tuples (Lwt_unix.run (t_of_view v));*)
-                return v))
+             fun () -> (*print_tuples (Lwt_unix.run (t_of_view v));*)
+                return v
       
   end
   
@@ -82,46 +79,45 @@ module S : STORE =
     
     let name = "IrminStore"
       
-    let empty = Lwt_unix.run (Store.create ())
+    let empty = Lwt_unix.run(Store.create config task >>= (fun v -> return (v "??") ))
       
     let init tuples =
       Lwt_unix.run
-        ((Store.create ()) >>=
+        (Store.create config task >>=
            (fun t ->
               (TupleView.view_of_t tuples) >>=
                 (fun view ->
-                   (Store.View.update_path t [ "Tuples" ] view) >>=
+                   (View.update_path "update tuples" t  [ "Tuples" ] view) >>=
                      (fun () ->
                         (* Store.View.of_path t ["Tuples"] >>= fun v ->    *)
                         (* print_tuples (Lwt_unix.run (t_of_view v));      *)
-                        return t))))
+                        return (t "??")))))
       
     (* add tuple view to the storage *)
     let add storage tuple =
       Lwt_unix.run
-        ((Store.View.of_path storage [ "Tuples" ]) >>=
-           (fun v ->
-              (TupleView.t_of_view v) >>=
-                (fun list ->
+        (View.of_path task storage [ "Tuples" ] >>=
+           fun v->
+              TupleView.t_of_view (v "??") >>=
+                fun list ->
                    (return (tuple :: list)) >>=
                      (fun new_list ->
                         (TupleView.view_of_t new_list) >>=
                           (fun new_view ->
-                             (Store.View.update_path storage [ "Tuples" ]
-                                new_view)
-                               >>= (fun _ -> return storage))))))
+                             (View.update_path "update tuples?" (fun _ -> storage) [ "Tuples" ] new_view)
+                               >>= (fun () -> return storage ))))
       
     let query (store : t) (q : Config.tuple list) =
       Lwt_unix.run
-        ((Store.View.of_path store [ "Tuples" ]) >>=
+        ((View.of_path task store [ "Tuples" ]) >>=
            (fun v ->
-              (TupleView.t_of_view v) >>=
+              (TupleView.t_of_view (v "???")) >>=
                 (fun list -> return (Config.execute_query list q))))
       
     let to_list t =
       Lwt_unix.run
-        ((Store.View.of_path t [ "Tuples" ]) >>=
-           (fun v -> TupleView.t_of_view v))
+        ((View.of_path task t [ "Tuples" ]) >>=
+           (fun v -> TupleView.t_of_view (v "??")))
       
   end
   
