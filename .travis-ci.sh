@@ -1,5 +1,5 @@
 # Edit this for your own project dependencies
-OPAM_DEPENDS="ocamlfind ounit re core menhir yojson atdgen lwt irmin"
+OPAM_DEPENDS="ocamlfind ounit re core menhir yojson atdgen lwt irmin git"
 	 
 ppa=avsm/ocaml42+opam12 
 echo "yes" | sudo add-apt-repository ppa:$ppa
