@@ -14,7 +14,7 @@ open Yojson
 exception Wrong_tuple
   
 exception Wrong_template
-
+  
 exception Wrong_value
   
 exception AM_not_found
@@ -48,8 +48,6 @@ type tuple =
 
 type db
 
- 
-  
 (* ---------------- Extended tuple: a tuple extended with a valuation of   *)
 (* variables.                                                              *)
 type ext_tuple = (((string * (t element_type)) list) * (tuple list))
