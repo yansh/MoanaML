@@ -56,7 +56,7 @@ module TupleView =
 			let fmt t x = Printf.ksprintf (fun str -> t str) x  
     (* create view from list of tuples *)
     let view_of_t tuples =
-       View.create task >>= 
+       View.empty() >>= 
         fun v ->
            Lwt_list.iteri_s
               (fun i tuple ->
@@ -64,7 +64,7 @@ module TupleView =
                  in
                    (* let p=print_endline (Yojson.Basic.to_string (to_json  *)
                    (* () tpl)) in                                           *) 
-                   View.update (fmt v "update %s/x" i) [ i ] (Yojson.Basic.to_string (Helper.to_json tuple))) tuples
+                   View.update v [ i ] (Yojson.Basic.to_string (Helper.to_json tuple))) tuples
              >>=
              fun () -> (*print_tuples (Lwt_unix.run (t_of_view v));*)
                 return v
@@ -87,7 +87,7 @@ module S : STORE =
            (fun t ->
               (TupleView.view_of_t tuples) >>=
                 (fun view ->
-                   (View.update_path "update tuples" t  [ "Tuples" ] view) >>=
+                   (View.update_path (t "update tuples")  [ "Tuples" ] view) >>=
                      (fun () ->
                         (* Store.View.of_path t ["Tuples"] >>= fun v ->    *)
                         (* print_tuples (Lwt_unix.run (t_of_view v));      *)
@@ -96,28 +96,28 @@ module S : STORE =
     (* add tuple view to the storage *)
     let add storage tuple =
       Lwt_unix.run
-        (View.of_path task storage [ "Tuples" ] >>=
+        (View.of_path storage [ "Tuples" ] >>=
            fun v->
-              TupleView.t_of_view (v "??") >>=
+              TupleView.t_of_view v  >>=
                 fun list ->
                    (return (tuple :: list)) >>=
                      (fun new_list ->
                         (TupleView.view_of_t new_list) >>=
                           (fun new_view ->
-                             (View.update_path "update tuples?" (fun _ -> storage) [ "Tuples" ] new_view)
+                             (View.update_path storage [ "Tuples" ] new_view)
                                >>= (fun () -> return storage ))))
       
     let query (store : t) (q : Config.tuple list) =
       Lwt_unix.run
-        ((View.of_path task store [ "Tuples" ]) >>=
+        ((View.of_path store [ "Tuples" ]) >>=
            (fun v ->
-              (TupleView.t_of_view (v "???")) >>=
+              (TupleView.t_of_view v) >>=
                 (fun list -> return (Config.execute_query list q))))
       
     let to_list t =
       Lwt_unix.run
-        ((View.of_path task t [ "Tuples" ]) >>=
-           (fun v -> TupleView.t_of_view (v "??")))
+        ((View.of_path t [ "Tuples" ]) >>=
+           (fun v -> TupleView.t_of_view v ))
       
   end
   
