@@ -199,7 +199,8 @@ let join am bm =
 (*in
   let p = print_endline "BM-->" in
   let p2 = print_bm b in let p = print_endline "<---" in b*)
-type rete_dataflow = | Empty | Node of am * bm * rete_dataflow | BNode of Config.tuple list
+type rete_dataflow =
+  | Empty | Node of am * bm * rete_dataflow | BNode of Config.tuple list
 
 (** gerenate RETE data lfow from  list of AMs **)
 let gen_rete ams =
@@ -219,7 +220,6 @@ let gen_rete ams =
   match rete_network with
   | Node (am, _, node) -> (am, (ref rete_network)) :: (mk_refs node acc)
   | Empty -> acc*)
-  
 (* NOTE: only compares 4 elements *)
 (* TODO: make sure to comapre against all elements *)
 let compare q tpl =
@@ -241,16 +241,23 @@ let add rete_network tuple =
     match node with | Node (_, bm, _) -> bm | Empty -> { solutions = []; } in
   let rec regen rete_network =
     match rete_network with
-    | Node (current_am, _, node) ->
+    | Node (current_am, bm, node) ->
         if not (compare current_am.pattern tuple)
-        then (*let p= print_bm  bm in*)
-          Node (current_am, (join current_am (get_bm (regen node))), node)
-        else
+        then (*-let p= print_bm  bm in*)
+			 let	next_node = regen node in 
+          Node (current_am, (join current_am (get_bm (next_node))), next_node)
+        else			
           (let new_am =
-             create_am current_am.pattern (tuple :: current_am.tuples)
-           in Node (new_am, (join new_am (get_bm node)), node))
+             create_am current_am.pattern (tuple :: current_am.tuples) (*in  let p3 =  print_mappings new_am in let p4 = print_bm (get_bm node) in let p4 = print_string " AFTER -- " in
+						let p5=  print_bm (join new_am (get_bm node)) in let p6 = print_string " END"*)
+           in Node (new_am, (join new_am (get_bm node)), node)) 
+					
     | Empty -> Empty
   in regen rete_network
+  
+(* add list of tuples *)
+let add_tuples rete_network tuples =
+  List.fold_right (fun tpl acc -> add acc tpl) tuples rete_network
   
 (*** given rete network start activations **)
 let rec execute_rete rete_network =
@@ -262,10 +269,25 @@ let rec execute_rete rete_network =
         Node (am, (join am (get_bm node)), (execute_rete node))
     | Empty -> Empty
   
-(* takes a list of AMs and joins them *)
-let execute_am_list ams =
-  let empty_bm = { solutions = []; }
-  in List.fold_right (fun am acc -> join am acc) ams empty_bm
+	
+(** generate rete network from a list of query tuples *)
+let to_rete_dataflow queries tuples =
+	(*let x = print_string "Initial Length: "; print_string (string_of_int (List.length queries) ) in*)
+  let am_list = List.map (fun q -> create_am q []) queries in 	
+	(*let x = print_string "Length: "; print_string (string_of_int (List.length am_list) )  in*) 
+	let rn = 
+		match am_list with  
+		| [] -> print_string "for some reason the AM list is empty"; Empty
+		| l ->  gen_rete l 	 
+  in  
+	let new_rn = 
+		match tuples with
+	| []-> rn
+	| tpls -> add_tuples rn tpls in 
+	(*let p=Helper.print_tuples (Helper.flatten_tuple_list (get_sol_tuples new_rn)) in*)
+	(*let Node (_, bm, _) = new_rn
+	in print_bm bm;*)
+	new_rn
   
 (** function to create rete newtork from a query **)
 let to_rete str tuples =
@@ -347,6 +369,7 @@ let get_tuples network =
              in List.fold_right Helper.TupleSet.add tuples acc)
           sols tuples_set
     | Empty -> tuples_set
+
   
 (** helper method accepts query string and runs it over tuples in a given BM, 
 extracts the values associated with the var **)
@@ -354,3 +377,18 @@ let exec_bm q network =
   let network = to_rete q (Helper.TupleSet.elements (get_tuples network))
   in execute_rete network
   
+(* takes a list of AMs and joins them *)
+let execute_am_list ams =
+  let empty_bm = { solutions = []; }
+  in List.fold_right (fun am acc -> join am acc) ams empty_bm
+  
+	(* returns solution tuples in a list *)
+let get_sol_tuples network =
+  match network with
+  | Node (_, { solutions = sols }, _) ->
+      List.fold_right
+        (fun (_, var_sols) acc ->
+           let (_, tuples) = var_sols
+           in ( (*Helper.print_tuples tuples; *)tuples :: acc))
+        sols []
+  | Empty -> []
