@@ -119,6 +119,6 @@ let (Rete.Node (_, res_bm, _)) = results
 (*let p = Rete.print_bm res_bm*)
 let r_map = Rete.get_res_map results [ "?name"; "?y"; "?email" ]
   
-let _ = Helper.StringMap.iter Helper.print_var r_map
+(*let _ = Helper.StringMap.iter Helper.print_var r_map *)
   
 
