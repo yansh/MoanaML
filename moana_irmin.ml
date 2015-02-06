@@ -81,7 +81,7 @@ module S : STORE =
       
     let empty = Lwt_unix.run(Store.create config task >>= (fun v -> return (v "??") ))
       
-    let init tuples =
+    let init ?(query:tuple list=[]) tuples =
       Lwt_unix.run
         (Store.create config task >>=
            (fun t ->
@@ -91,7 +91,7 @@ module S : STORE =
                      (fun () ->
                         (* Store.View.of_path t ["Tuples"] >>= fun v ->    *)
                         (* print_tuples (Lwt_unix.run (t_of_view v));      *)
-                        return (t "??")))))
+                         return (t "??")))))
       
     (* add tuple view to the storage *)
     let add storage tuple =
@@ -139,8 +139,9 @@ module G : GRAPH =
       in (print_endline s; IS.add g tuple)
       
     let map g (query : Config.tuple list) = 			
-			IS.query g query 
-      
+			IS.query g query |> List.flatten |> IS.init (*Helper.flatten_tuple_list |> IS.init *)
+     
+		let to_list g = IS.to_list g	 
        
   end
   

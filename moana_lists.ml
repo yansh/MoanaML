@@ -27,7 +27,7 @@ module S : STORE = struct
 
   let empty = []
 
-  let init tuples = tuples
+  let init ?(query:Config.tuple list=[])  tuples = tuples
 
   let add storage tuple = tuple :: storage
 
@@ -53,7 +53,9 @@ module G : GRAPH = struct
     print_endline s;
     LS.add g tuple
 
-  let map g (query : Config.tuple list) = LS.query g query (*|>  Helper.flatten_tuple_list |> LS.init*) 
+  let map g (query : Config.tuple list) = LS.query g query |>  Helper.flatten_tuple_list |> LS.init 
+	
+	let to_list g = LS.to_list g 
 				
 
   (*let to_string graph  =
