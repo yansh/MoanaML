@@ -172,8 +172,7 @@ let str_query_list s =
 (** flatten list of unique tuples **)
 let flatten_tuple_list tuples =
   let tuples_set = TupleSet.empty
-  in
-    (List.fold_right
+  in (List.fold_right
        (fun tuples acc -> List.fold_right TupleSet.add tuples acc) tuples
        tuples_set)
       |> TupleSet.elements
