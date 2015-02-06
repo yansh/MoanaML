@@ -29,7 +29,7 @@ module type STORE =
       val name : string
         
         
-      val init : Config.tuple list -> t
+      val init : ?query:Config.tuple list -> Config.tuple list -> t
       val add : t -> Config.tuple -> t
         
       (* provide a graph query as list of tuples and returns list of tuples    *)
@@ -50,13 +50,15 @@ module type GRAPH =
       
     type t 
 		
-		 val init : Config.tuple list -> t
+    val init : ?query:Config.tuple list -> Config.tuple list -> t 
         
     (* add fact as a tuple *)
     val add : t -> Config.tuple -> t
       
     (* specify a query as list of tuple, this will return a matching list of *)
-    val map : t -> Config.tuple list -> Config.tuple list list
+    val map : t -> Config.tuple list -> t (* Config.tuple list list*)
+		
+    val to_list: t -> Config.tuple list
                     
   end;;
 
@@ -75,8 +77,9 @@ module Make(S: STORE):(GRAPH with type t = S.t) = struct
      S.add g tuple ;;
      
           
-  let map g (query : Config.tuple list) = S.query g query (*|>  Helper.flatten_tuple_list |> S.init*) 
-
+  let map g (query : Config.tuple list) = S.query g query |>  Helper.flatten_tuple_list |> S.init ~query
+  
+  let to_list = S.to_list 
 
   (*let to_string graph  =
     let dbList = S.to_list graph in

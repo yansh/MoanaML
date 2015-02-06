@@ -20,7 +20,9 @@ sig
 	(* storage name *)
 	val name : string
 	
-	val init : Config.tuple list -> t
+	(*  init ?query initial_tuples *)
+	val init : ?query:Config.tuple list -> Config.tuple list -> t
+	
 	val add : t -> Config.tuple -> t
 	
 	(* provide a graph query as list of tuples and returns list of tuples    *)
@@ -41,15 +43,16 @@ sig
 
 	type t
 	
-	val init: Config.tuple list -> t
+	val init: ?query:Config.tuple list -> Config.tuple list -> t
 
 	(* add fact as a tuple *)
 	val add : t -> Config.tuple -> t
 	
 	(* specify a query as list of tuple, *)
 	(* this will a new store with mathching tuples *)
-	val map : t -> Config.tuple list -> Config.tuple list list
+	val map : t -> Config.tuple list -> t (*Config.tuple list list*)
 	
+	val to_list: t -> Config.tuple list
 
 end;;
 
@@ -60,11 +63,12 @@ module Make : functor (S: STORE) ->
 	
 		type t = S.t
 		
-		val init: Config.tuple list -> t
+		val init: ?query:Config.tuple list -> Config.tuple list -> t
 		
 		val add: t -> Config.tuple -> t
 		
-		val map: t -> Config.tuple list -> Config.tuple list list
+		val map: t -> Config.tuple list -> t (*Config.tuple list list*)
 		
+		val to_list: t -> Config.tuple list
 	end;;
 
