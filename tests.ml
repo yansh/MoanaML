@@ -549,7 +549,7 @@ let test13 _ =
     struct
       open Rete
         
-      let exd_tuples = [ t13; t14; t15 ] @ tuples
+      let exd_tuples = [ t13; t14 ] @ tuples
         
       let q_exp_res =
         {
@@ -570,10 +570,12 @@ let test13 _ =
       (*let p = print_mappings am2*)
       let rete_network = gen_rete am_list
         
-      let (Node (_, res_bm, _)) = add rete_network t12
+      let (Node (_, res_bm, _)) = let n = add rete_network t12 in add n t15
         
+			(*let p1 = Rete.print_mappings am4	*)
+				
     end
-  in (*let p = print_bm res_bm in*) assert_equal Test.res_bm Test.q_exp_res
+  in  assert_equal Test.res_bm Test.q_exp_res
   
 (*** TEST 14:   
 Testing simple parser - create t1 tuple from a string
@@ -676,23 +678,77 @@ let test18 _ =
 (** Testing Make functor **)
 let test19 _ =
   let module G = Moana.Make(Moana_irmin.S) in let graph = G.init tuples in  
-  let query10 = [ q1; q2 ] and q10_exp_res = [ [ t1; t9 ] ] in
+  let query10 = [ q1; q2 ] and q10_exp_res = [ t1; t9 ]  in
   let res_q10 = G.map graph query10
   in
     (*let p = print_tuples_list res_q10 in let p1 = print_tuples_list q10_exp_resin*)
-    assert_equal q10_exp_res res_q10
+    assert_equal q10_exp_res (G.to_list res_q10)
 
 (** Same test as test 19, different backend store **)
 
 let test20 _ =
   let module G = Moana.Make(Moana_lists.S) in let graph = G.init tuples in  
-  let query10 = [ q1; q2 ] and q10_exp_res = [ [ t1; t9 ] ] in
+  let query10 = [ q1; q2 ] and q10_exp_res =  [ t9; t1 ]  in
   let res_q10 = G.map graph query10
   in
     (*let p = print_tuples_list res_q10 in let p1 = print_tuples_list q10_exp_resin*)
-    assert_equal q10_exp_res res_q10
+    assert_equal q10_exp_res (G.to_list res_q10)
 
-(** Same test as test 19, different backend store **)
+(*** TEST 21: 
+   
+This is a standing query test. We first construct a rete network.
+Then populate the data network with ne wtuples
+of the network with the current result.
+ 
+ MAP  {    
+     ?x, type, Car
+     ?x, hasColor, ?y
+     ?y, type, Color
+     ?y, rgbValue, White
+    }
+***)
+let test21 _ =
+  let module Test =
+    struct
+      open Rete
+        
+      let exd_tuples = [ t13; t14 ; t12; t15] @ tuples
+        
+      let q_exp_res =
+        {
+          solutions =
+            [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ]));
+              ("?y", ((Constant "c2"), [ t15; t14; t13; t12 ])) ];
+        }
+        
+      (*let am1 = create_am q1 []
+
+      and am2 = create_am q3 []
+      and am3 = create_am q4 []
+
+      and am4 = create_am q5 []
+        
+      let am_list = [ am1; am2; am3; am4 ]
+        
+      (*let p = print_mappings am2*)
+      let rete_network = gen_rete am_list*)
+			let rete_network = (List.map (fun q -> create_am q [])  [q1;q3;q4;q5]) |> gen_rete
+        
+      let (Node (_, res_bm, _)) = add_tuples rete_network  exd_tuples
+        
+			(*let p1 = Rete.print_bm res_bm*)
+				
+    end
+  in  assert_equal Test.res_bm Test.q_exp_res
+		
+let test22 _ =
+  let query = [ q1; q2 ] and q_exp_res =  [ t9; t1 ]  in
+	let module G = Moana.Make(Moana_rete.S) in let graph = G.init ~query tuples in  
+  let res_q10 = G.map graph query
+  in
+    assert_equal q_exp_res (G.to_list res_q10)
+
+
 
 (*let test21 _ =
 	let query10 = [ q1; q2 ] and q10_exp_res = [ [ t1; t9 ] ] in
@@ -711,7 +767,8 @@ let suite =
       "test9" >:: test9; "test10" >:: test10; "test11" >:: test11;
       "test12" >:: test12; "test13" >:: test13; "test14" >:: test14;
       "test15" >:: test15; "test16" >:: test16;"test17" >:: test17;
-			"test18" >:: test18;"test19" >:: test19;"test20" >:: test20 ]
+			"test18" >:: test18;"test19" >:: test19;"test20" >:: test20; 
+			"test21:" >:: test21; "test22:" >:: test22 ]
   
 let _ = run_test_tt_main suite
   
