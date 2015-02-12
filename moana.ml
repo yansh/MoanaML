@@ -30,7 +30,8 @@ module type STORE =
         
         
       val init : ?query:Config.tuple list -> Config.tuple list -> t
-      val add : t -> Config.tuple -> t
+
+			val add : t -> Config.tuple -> t
         
       (* provide a graph query as list of tuples and returns list of tuples    *)
       (* matching it                                                           *)

@@ -30,33 +30,13 @@ module S : STORE = struct
  (* the notion of empty data flow doesn't exist *)
   let empty = Rete.Empty
 
-let q1 =
-  {
-    subj = Variable "?x";
-    pred = Constant "type";
-    obj = Constant "Car";
-    ctxt = Constant "context";
-    time_stp = None;
-    sign = None;
-  }
-  
-let q2 =
-  {
-    subj = Variable "?x";
-    pred = Constant "hasColor";
-    obj = Constant "Red";
-    ctxt = Constant "context";
-    time_stp = None;
-    sign = None;
-  }
- 
   let hlp = function 
 		| None ->  []
 		| Some x -> x
 
 
   let init ?query tuples = hlp query |> function
-		| [] -> Rete.Empty
+		| [] -> Rete.BNode(tuples)
 	  |	queries -> Rete.to_rete_dataflow queries tuples (*let n = Rete.to_rete_dataflow queries tuples in let Rete.Node (_, bm, _) = n 
 		in let p2 = Rete.print_bm bm in n*)
 
@@ -86,6 +66,7 @@ module G : GRAPH = struct
 	let init = RS.init
 
   let add g (tuple : Config.tuple) =
+		
   let s = Printf.sprintf "Adding fact to [ %s <- %s ]" RS.name (Helper.to_string tuple) in
     print_endline s;
     RS.add g tuple
