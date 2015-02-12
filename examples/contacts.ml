@@ -119,6 +119,29 @@ let (Rete.Node (_, res_bm, _)) = results
 (*let p = Rete.print_bm res_bm*)
 let r_map = Rete.get_res_map results [ "?name"; "?y"; "?email" ]
   
-(*let _ = Helper.StringMap.iter Helper.print_var r_map *)
+let _ = Helper.StringMap.iter Helper.print_var r_map 
+  
+ (********* Testing unified Moana graph signature ****)
+let _ = print_string "---------------------------------\n"
+let q2_ = Helper.str_query_list
+  "MAP {
+	?y,fn,?name,contacts
+	?y,email,?email,contacts
+	}"
+  
+(* execute policy to bring all the tuples that b can view *)
+let q1_ = Helper.str_query_list
+  "MAP {
+	 ?x, knows, ?o, contacts
+	 ?o, email, ?email, contacts	 
+	 ?o, fn, ?n, contacts
+	}"
   
 
+(*let prnt = Helper.print_tuples_list contacts  *)
+module G = Moana.Make(Moana_rete.S) 
+
+let graph = G.init (List.flatten contacts) |> G.map  ~tuples:policies |> G.map ~tuples:q2_|> G.map  ~tuples:policies |> G.map ~tuples:q2_
+
+
+let _ = Helper.print_tuples (G.to_list graph)
