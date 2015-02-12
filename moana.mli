@@ -65,9 +65,9 @@ module Make : functor (S: STORE) ->
 		
 		val init: ?query:Config.tuple list -> Config.tuple list -> t
 		
-		val add: t -> Config.tuple -> t
+		val add: t -> tuples:(Config.tuple list) -> t
 		
-		val map: t -> Config.tuple list -> t (*Config.tuple list list*)
+		val map: t -> tuples:(Config.tuple list) -> t (*Config.tuple list list*)
 		
 		val to_list: t -> Config.tuple list
 	end;;
