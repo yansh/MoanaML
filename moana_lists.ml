@@ -53,7 +53,7 @@ module G : GRAPH = struct
     print_endline s;
     LS.add g tuple
 
-  let map g (query : Config.tuple list) = LS.query g query |>  Helper.flatten_tuple_list |> LS.init 
+  let map g ~tuples:query = LS.query g query |>  Helper.flatten_tuple_list |> LS.init 
 	
 	let to_list g = LS.to_list g 
 				

@@ -66,14 +66,13 @@ module G : GRAPH = struct
 	let init = RS.init
 
   let add g (tuple : Config.tuple) =
-		
   let s = Printf.sprintf "Adding fact to [ %s <- %s ]" RS.name (Helper.to_string tuple) in
     print_endline s;
     RS.add g tuple
 
 
   (* in RETE the result is located in the last BM in the network, no need to run any mechanism *)
-	let map g (query : Config.tuple list) = g
+	let map g ~tuples:query = g
 	
 	let to_list  = RS.to_list 
 				

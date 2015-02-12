@@ -41,7 +41,7 @@ module type STORE =
       val to_list: t -> Config.tuple list
         
     end;;
-  
+   
 (* Signature for the Moana abstraction which will support many types of    *)
 (* backend storage.                                                        *)
 module type GRAPH =
@@ -57,7 +57,7 @@ module type GRAPH =
     val add : t -> Config.tuple -> t
       
     (* specify a query as list of tuple, this will return a matching list of *)
-    val map : t -> Config.tuple list -> t (* Config.tuple list list*)
+    val map : t -> tuples:(Config.tuple list)  -> t 
 		
     val to_list: t -> Config.tuple list
                     
@@ -78,7 +78,7 @@ module Make(S: STORE):(GRAPH with type t = S.t) = struct
      S.add g tuple ;;
      
           
-  let map g (query : Config.tuple list) = S.query g query |>  Helper.flatten_tuple_list |> S.init ~query
+  let map g ~tuples:query= S.query g query |>  Helper.flatten_tuple_list |> S.init ~query
   
   let to_list = S.to_list 
 

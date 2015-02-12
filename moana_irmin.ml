@@ -138,7 +138,7 @@ module G : GRAPH =
           (Helper.to_string tuple)
       in (print_endline s; IS.add g tuple)
       
-    let map g (query : Config.tuple list) = 			
+    let map g ~tuples:query = 			
 			IS.query g query |> List.flatten |> IS.init (*Helper.flatten_tuple_list |> IS.init *)
      
 		let to_list g = IS.to_list g	 

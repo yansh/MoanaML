@@ -50,7 +50,7 @@ sig
 	
 	(* specify a query as list of tuple, *)
 	(* this will a new store with mathching tuples *)
-	val map : t -> Config.tuple list -> t (*Config.tuple list list*)
+	val map : t -> tuples:(Config.tuple list)  -> t 
 	
 	val to_list: t -> Config.tuple list
 
@@ -65,7 +65,7 @@ module Make : functor (S: STORE) ->
 		
 		val init: ?query:Config.tuple list -> Config.tuple list -> t
 		
-		val add: t -> tuples:(Config.tuple list) -> t
+		val add: t -> Config.tuple -> t
 		
 		val map: t -> tuples:(Config.tuple list) -> t (*Config.tuple list list*)
 		
