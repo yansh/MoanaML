@@ -1,5 +1,5 @@
 (*
-* Copyright (c) 2014 Yan Shvartzshnaider
+* Copyright (c) 2015 Yan Shvartzshnaider
 *
 * Permission to use, copy, modify, and distribute this software for any
 * purpose with or without fee is hereby granted, provided that the above
@@ -110,14 +110,14 @@ let q1 =
   
 
 let prnt = Helper.print_tuples_list contacts  
-let results = (Rete.exec_qry q1 (List.flatten contacts)) |> (Rete.exec_bm q2)
+let results = (ReteImpl.InMemory.exec_qry q1 (List.flatten contacts)) |> (ReteImpl.InMemory.exec_bm q2)
   
-let (Rete.Node (_, res_bm, _)) = results
+let (ReteImpl.InMemory.Node (_, res_bm, _)) = results
   
 (*let p2 =
   Helper.print_tuples (Helper.TupleSet.elements (Rete.get_tuples results))*)
 (*let p = Rete.print_bm res_bm*)
-let r_map = Rete.get_res_map results [ "?name"; "?y"; "?email" ]
+let r_map = ReteImpl.InMemory.get_res_map results [ "?name"; "?y"; "?email" ]
   
 let _ = Helper.StringMap.iter Helper.print_var r_map 
   
