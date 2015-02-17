@@ -1,14 +1,19 @@
-(* * Copyright (c) 2014 Yan Shvartzshnaider * * Permission to use, copy,   *)
-(* modify, and distribute this software for any * purpose with or without  *)
-(* fee is hereby granted, provided that the above * copyright notice and   *)
-(* this permission notice appear in all copies. * * THE SOFTWARE IS        *)
-(* PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES * WITH REGARD  *)
-(* TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF * MERCHANTABILITY  *)
-(* AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR * ANY SPECIAL,  *)
-(* DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES * WHATSOEVER  *)
-(* RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN * ACTION OF  *)
-(* CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF * OR IN   *)
-(* CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.                *)
+(*
+* Copyright (c) 2015 Yan Shvartzshnaider
+*
+* Permission to use, copy, modify, and distribute this software for any
+* purpose with or without fee is hereby granted, provided that the above
+* copyright notice and this permission notice appear in all copies.
+*
+* THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+* WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+* MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+* ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+* WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+* ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+* OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *)
+
 open Config
   
 open Helper
@@ -349,18 +354,18 @@ MAP  {
 (*  test filter function *)
 let test4 _ =
   let query = q6 and q_exp_res = [ t10; t11 ] in
-  let res_q = Rete.filter query tuples in assert_equal q_exp_res res_q
+  let res_q = ReteImpl.InMemory.filter query tuples in assert_equal q_exp_res res_q
   
 (* create alpha memory and add tuples to it *)
 let test5 _ =
   let query = q6 and q_exp_res = [ t10; t11 ] in
-  let am = Rete.create_am query tuples in assert_equal q_exp_res am.tuples
+  let am = ReteImpl.InMemory.create_am query tuples in assert_equal q_exp_res am.tuples
   
 (* test simple join function AM with empty BM *)
 let test6 _ =
   let module Test =
     struct
-      open Rete
+      open ReteImpl.InMemory
         
       let q_exp_res = { solutions = [ ("?x", ((Constant "a"), [ t1 ])) ]; }
         
@@ -384,7 +389,7 @@ Implement by create a combination of AM and BM
 let test7 _ =
   let module Test =
     struct
-      open Rete
+       open ReteImpl.InMemory
         
       let am1 = create_am q1 tuples
 
@@ -412,7 +417,7 @@ let test7 _ =
 let test8 _ =
   let module Test =
     struct
-      open Rete
+      open ReteImpl.InMemory
         
       let exd_tuples = [ t12; t13; t14; t15 ] @ tuples
         
@@ -449,7 +454,7 @@ let test8 _ =
 let test9 _ =
   let module Test =
     struct
-      open Rete
+       open ReteImpl.InMemory
         
       let q_exp_res =
         { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; }
@@ -484,7 +489,7 @@ the matching tuples to the query:
 let test10 _ =
   let module Test =
     struct
-      open Rete
+       open ReteImpl.InMemory
         
       let q_exp_res =
         { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; }
@@ -547,7 +552,7 @@ of the network with the current result.
 let test13 _ =
   let module Test =
     struct
-      open Rete
+       open ReteImpl.InMemory
         
       let exd_tuples = [ t13; t14 ] @ tuples
         
@@ -660,7 +665,7 @@ the matching tuples to the query:
 let test18 _ =
   let module Test =
     struct
-      open Rete
+      open ReteImpl.InMemory
       let q_exp_res =
         { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; }        
 		  let res_rete_network = 
@@ -710,7 +715,7 @@ of the network with the current result.
 let test21 _ =
   let module Test =
     struct
-      open Rete
+       open ReteImpl.InMemory
         
       let exd_tuples = [ t13; t14 ; t12; t15] @ tuples
         
