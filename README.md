@@ -14,4 +14,6 @@ and map provides a dynamically maintained mapping of the global graph to an appl
 
 For more info check out https://mozillaignite.org/apps/411/ or contact the author.
 
+You can also this position paper: http://dl.acm.org/citation.cfm?id=2676735
+
 [![Build Status](https://travis-ci.org/yansh/MoanaML.png?branch=master)](https://travis-ci.org/yansh/MoanaML)
