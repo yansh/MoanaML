@@ -21,14 +21,16 @@ open Moana
 
 open Config
 
-module S : STORE = struct
+open ReteImpl
 
-  type t = Rete.rete_dataflow
+module S : STORE = struct
+	
+  type t = InMemory.t
 
   let name = "Rete store"
 
  (* the notion of empty data flow doesn't exist *)
-  let empty = Rete.Empty
+  let empty = InMemory.Empty
 
   let hlp = function 
 		| None ->  []
@@ -36,21 +38,21 @@ module S : STORE = struct
 
 
   let init ?query tuples = hlp query |> function
-		| [] -> Rete.BNode(tuples)
-	  |	queries -> Rete.to_rete_dataflow queries tuples (*let n = Rete.to_rete_dataflow queries tuples in let Rete.Node (_, bm, _) = n 
+		| [] -> InMemory.BNode(tuples)
+	  |	queries -> InMemory.to_rete_dataflow queries tuples (*let n = Rete.to_rete_dataflow queries tuples in let Rete.Node (_, bm, _) = n 
 		in let p2 = Rete.print_bm bm in n*)
 
-  let add storage tuple =  Rete.add storage tuple
+  let add storage tuple =  ReteImpl.InMemory.add storage tuple
 
   (* execute a query on a store, given as collecton of tuples *)
 
   let query (store : t) (q : Config.tuple list) =  (*let Rete.Node (_, bm, _) = store in let p2 = Rete.print_bm bm in
 	 let  p = print_string (string_of_int (List.length (Helper.flatten_tuple_list (Rete.get_sol_tuples store)))) in*) 
-	store |>  Rete.get_sol_tuples 
+	store |>  ReteImpl.InMemory.get_sol_tuples 
 
   let to_list store = 
 		(*let  p = print_string "--->";print_string (string_of_int (List.length (Helper.flatten_tuple_list (Rete.get_sol_tuples store)))) in*) 
-		Rete.get_sol_tuples store |> Helper.flatten_tuple_list 
+		ReteImpl.InMemory.get_sol_tuples store |> Helper.flatten_tuple_list 
 end
 
 
