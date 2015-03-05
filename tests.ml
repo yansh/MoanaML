@@ -563,15 +563,14 @@ let test13 _ =
               ("?y", ((Constant "c2"), [ t15; t14; t13; t12 ])) ];
         }
         
-      let am1 = create_am q1 exd_tuples
-
+      let am1 = create_am q1 exd_tuples 
       and am2 = create_am q3 exd_tuples
       and am3 = create_am q4 exd_tuples
 
       and am4 = create_am q5 exd_tuples
         
-      let am_list = [ am1; am2; am3; am4 ]
-        
+      let am_list = [ am1; am2; am3; am4 ]	
+	
       (*let p = print_mappings am2*)
       let rete_network = gen_rete am_list
         
@@ -580,7 +579,7 @@ let test13 _ =
 			(*let p1 = Rete.print_mappings am4	*)
 				
     end
-  in  assert_equal Test.res_bm Test.q_exp_res
+  in  let p1= ReteImpl.InMemory.print_mappings Test.am1 in let p =  ReteImpl.InMemory.am_to_json Test.am1 |> Rete_node_j.string_of_am_json |> Yojson.Basic.from_string |>Yojson.Basic.pretty_to_string|> print_string  in assert_equal Test.res_bm Test.q_exp_res
   
 (*** TEST 14:   
 Testing simple parser - create t1 tuple from a string
@@ -678,7 +677,7 @@ let test18 _ =
       let (Node (_, res_bm, _)) = execute_rete res_rete_network
         
     end
-  in  (*let p = Rete.print_bm Test.res_bm in*) assert_equal Test.res_bm Test.q_exp_res
+  in  (*let p = Rete.print_bm Test.res_bm in*)  let p =  ReteImpl.InMemory.bm_to_json Test.q_exp_res |> Rete_node_j.string_of_bm_json |> Yojson.Basic.from_string |>Yojson.Basic.pretty_to_string|> print_string in assert_equal Test.res_bm Test.q_exp_res
 
 (** Testing Make functor **)
 let test19 _ =
@@ -739,12 +738,13 @@ let test21 _ =
       let rete_network = gen_rete am_list*)
 			let rete_network = (List.map (fun q -> create_am q [])  [q1;q3;q4;q5]) |> gen_rete
         
-      let (Node (_, res_bm, _)) = add_tuples rete_network  exd_tuples
-        
+      let res_node = add_tuples rete_network  exd_tuples
+       
+			let (Node (_, res_bm, _)) = res_node	 
 			(*let p1 = Rete.print_bm res_bm*)
 				
     end
-  in  assert_equal Test.res_bm Test.q_exp_res
+  in  let p =  ReteImpl.InMemory.node_to_json Test.res_node |> Rete_node_j.string_of_node_json |> Yojson.Basic.from_string |>Yojson.Basic.pretty_to_string|> print_string in assert_equal Test.res_bm Test.q_exp_res
 		
 let test22 _ =
   let query = [ q1; q2 ] and q_exp_res =  [ t9; t1 ]  in
