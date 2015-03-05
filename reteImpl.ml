@@ -65,25 +65,35 @@ module InMemory = struct
 			{ s = val_to_json tpl.subj;
 				p = val_to_json tpl.pred;
 				o = val_to_json tpl.obj;
-			cxt = Some (val_to_json tpl.ctxt); time_smp = None; sign = None } in tpl_json
+				cxt = Some (val_to_json tpl.ctxt); time_smp = None; sign = None } in tpl_json
 	
 	let to_json_tpl_list tuples =
 		List.map (fun t -> tpl_to_json t) tuples
 	
-	let am_to_json am =		
-		(*convert the am/vars mapping into json *)
-		let v_json vars =
-			List.map (fun (var , values) ->
-			(var, List.map (fun (value , tpl) ->
-				(*(val_to_json value, tpl_to_json tpl) -- we know it's constant*) 
-				(get_val () value, tpl_to_json tpl)
-				) values)	
-			) vars in
+	let v_json vars =
+		List.map (fun (var , values) ->
+						(var, List.map (fun (value , tpl) ->
+									(* (val_to_json value, tpl_to_json tpl) -- we know it's constant *)
+											(get_val () value, tpl_to_json tpl)
+								) values)
+			) vars
+	
+	let am_to_json am =
+		(* convert the am/vars mapping into json *)
 		let open Rete_node_t in
 		{
 			ptrn = (tpl_to_json am.pattern);
 			tpls = (to_json_tpl_list am.tuples);
 			vrs = v_json am.vars
+		}
+
+	let bm_to_json bm =
+		let open Rete_node_t in
+		{
+			sols = List.map (fun (var, values) ->
+								match values with
+								| (value, tpls) ->
+										(var, (get_val () value, to_json_tpl_list tpls)) ) bm.solutions
 		}
 	
 	(* helper to filter tuples list to form the pattern *)
