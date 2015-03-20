@@ -21,21 +21,36 @@ struct
 		in
 		match mem with
 		| `AM am ->
-				View.update v [ node_id; "AM"; "pattern" ]
-					(Rete_node_j.string_of_tuple am.ptrn)
+				View.mem v [ node_id; "AM"; "pattern" ] >>=
+				(function
+					| false -> View.update v [ node_id; "AM"; "pattern" ]
+								(Rete_node_j.string_of_tuple am.ptrn)
+					| true -> print_string ("["^node_id ^ "-AM-"^ "-pattern-"^Rete_node_j.string_of_tuple am.ptrn^"]");
+							return ())
 				>>= fun () ->
 						Lwt_list.iteri_s
 							(fun i tuple ->
 										let i = string_of_int i
 										in
-										View.update v [ node_id; "AM"; "tuples"; i ]
-											(Rete_node_j.string_of_tuple tuple))
+										View.mem v [ node_id; "AM"; "tuples"; i ] >>=
+										(function
+											| false ->
+													View.update v [ node_id; "AM"; "tuples"; i ]
+														(Rete_node_j.string_of_tuple tuple)
+											| true -> print_string ("["^node_id ^ "-AM-"^ "-tuples-"^i^"]"); return ()))
 							am.tpls >>= fun () -> Lwt_list.iteri_s
 									(fun i (var, val_pairs) ->
 												Lwt_list.iter_p
 													(fun (value, tuple) ->
-																View.update v [ node_id; "AM"; "vars"; var; value ]
-																	(Rete_node_j.string_of_tuple tuple)) val_pairs) am.vrs
+														(* this check should be redudant, for some     *)
+														(* reason var, value tuples, repeat - NEEDS    *)
+														(* further investigation                       *)
+																View.mem v [ node_id; "AM"; "vars"; var; value] >>=
+																function
+																| true -> print_string ("["^node_id ^ "-AM-"^ "-vars-"^var^"-"^value^"]") ; return ()
+																| false ->
+																		View.update v [ node_id; "AM"; "vars"; var; value ] (Rete_node_j.string_of_tuple tuple)
+													) val_pairs) am.vrs
 								>>= fun () -> return v
 		| `BM { sols = solutions } ->
 				Lwt_list.iteri_s
@@ -62,7 +77,7 @@ struct
 						(* let keys = List.map (function | [ i ] -> print_string (key  *)
 						(* ^ "AM"^ "tuples"^ i);int_of_string i | i -> print_string    *)
 						(* (key ^ "AM"^ "tuples"^ i); assert false) key_list in        *)
-								List.iter (fun [i]-> print_string (key ^ "AM"^ "tuples"^i) )key_list;
+								List.iter (fun [i]-> print_string ("["^key ^ "-AM-"^ "-tuples-"^i^"]") )key_list;
 								Lwt_list.fold_left_s
 									( fun acc [idx] ->
 												View.read_exn v [key; "AM"; "tuples"; idx]
@@ -70,14 +85,14 @@ struct
 														return(json_to_tpl (Rete_node_j.tuple_of_string(tuple)) :: acc) )[] key_list >>= fun tpls ->
 										View.list v [key; "AM"; "vars"] >>=
 										fun path ->
-												return(List.fold_left(fun acc [var; value] ->
-																		(var, [(Constant value,
+												Lwt_list.fold_left_s(fun acc [var; value] ->
+																return ((var, [(Constant value,
 																				View.read_exn v [key; "AM"; "vars"; var; value] >>=
 																				fun tuple ->
 																						let tpl = json_to_tpl ((Rete_node_j.tuple_of_string tuple)) in
-																						return tpl)]) :: acc)
-															
-															[] path)
+																						return tpl)]) :: acc))
+													
+													[] path
 												>>= fun vrs ->
 												(* need to adjust the vars element to not include  *)
 												(* Lwt                                             *)
@@ -124,10 +139,10 @@ struct
 		match jnode with
 		| `Node (jam , jbm, next_node) ->
 				store_mem v ("Node" ^ key) jam >>=
-				(fun v1 ->
-							store_mem v ("Node" ^ key) jbm >>=
-							(fun v ->
-										store_node v (idx + 1) next_node))
+				fun v ->
+						store_mem v ("Node" ^ key) jbm >>=
+						fun v ->
+								store_node v (idx + 1) next_node
 		| `BNode tpls -> return v
 		
 		| `Empty -> return v
@@ -137,7 +152,7 @@ struct
 			let jnode = ReteImpl.InMemory.node_to_json node
 			in
 			View.empty () >>=
-			fun v -> (store_node v 0 jnode) >>= fun v -> return v)
+			fun v -> store_node v 0 jnode >>= fun v -> return v)
 	
 	let t_of_view v =
 		return (get_node v 0)
@@ -154,7 +169,7 @@ module RStorage = struct
 				fun t ->
 						ReteView.view_of_t rnode >>=
 						fun view ->
-								View.update_path (t "init rete") [ "Rete" ] view
+								View.update_path (t "Rete init") [ "Rete" ] view
 								>>=
 								fun () ->
 										return (t "??"))
