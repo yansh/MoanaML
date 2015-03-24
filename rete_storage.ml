@@ -28,13 +28,13 @@ struct
                   (* value tuples, repeat - NEEDS further investigation    *)
                       View.mem v [ node_id; "AM"; "vars"; var; value] >>=
                       function
-                      | true -> print_string ("------->[["^node_id ^ "-AM-"^ 
-                      "-vars-"^var^"-"^value^"]]\n") ; return_unit
+                      | true -> print_string ("------->[["^node_id ^ "-AM-"^
+                              "-vars-"^var^"-"^value^"]]\n") ; return_unit
                       | false ->
                           print_string ("["^node_id ^ "-AM-"^ "-vars-"^var^"-"
-                          ^value^"]"^"\n") ;
-                          View.update v [ node_id; "AM"; "vars"; var; value ] 
-                          (Rete_node_j.string_of_tuple tuple)
+                              ^value^"]"^"\n") ;
+                          View.update v [ node_id; "AM"; "vars"; var; value ]
+                            (Rete_node_j.string_of_tuple tuple)
                 ) val_pairs) vars in
     let store_AM_tuples tuples =
       Lwt_list.iteri_s
@@ -47,8 +47,8 @@ struct
                     print_string ("["^node_id ^ "-AM-"^ "-tuples-"^i^"]\n");
                     View.update v [ node_id; "AM"; "tuples"; i ]
                       (Rete_node_j.string_of_tuple tuple)
-                | true -> print_string ("["^node_id ^ "-AM-"^ "-tuples-"^i^"]"); 
-                return_unit))
+                | true -> print_string ("["^node_id ^ "-AM-"^ "-tuples-"^i^"]");
+                    return_unit))
         tuples in
     match mem with
     | `AM am ->
@@ -56,11 +56,11 @@ struct
         (function
           | false ->
               print_string ("["^node_id ^ "-AM-"^ "-pattern-"
-              ^Rete_node_j.string_of_tuple am.ptrn^"]\n"); 
+                  ^Rete_node_j.string_of_tuple am.ptrn^"]\n");
               View.update v [ node_id; "AM"; "pattern" ]
                 (Rete_node_j.string_of_tuple am.ptrn)
-          | true -> print_string ("["^node_id ^ "-AM-"^ 
-          "-pattern-"^Rete_node_j.string_of_tuple am.ptrn^"]");
+          | true -> print_string ("["^node_id ^ "-AM-"^
+                  "-pattern-"^Rete_node_j.string_of_tuple am.ptrn^"]");
               return_unit)
         >>= fun () -> store_AM_vars am.vrs
             >>= fun () -> store_AM_tuples am.tpls >>=
@@ -80,37 +80,58 @@ struct
   
   let rec get_node v node_id =
     let key = ("Node" ^ string_of_int node_id)
+    in let rec print_lst lst =
+      function
+      | h:: t -> print_string ("\n-->" ^h); print_lst () t
+      | [] -> print_string "<<-"
     in
     View.mem v [key; "AM"; "pattern"] >>= function
     | true ->
+        print_string ("\n["^key ^ "]");
         View.read_exn v [key; "AM"; "pattern"] >>=
         fun ptrn -> (* get the pattern tuple string *)
+            print_string ("["^key ^ "-AM-pattern"^ ptrn);
             View.list v [key; "AM"; "tuples"] >>=
             fun key_list ->
                 List.iter (function |
-                    [t_idx] -> 
-                         print_string ("["^key ^ "-AM-"^ "-tuples:-"^t_idx^"]")
+                    k ->
+                        match Irmin.Path.String_list.decons k with
+                        | Some step ->
+                            let s = snd step in
+                            print_lst () k
+                        
+                        | None -> print_string "Empty"
                   )key_list;
                 Lwt_list.fold_left_s
-                  ( fun acc [idx] ->
-                        View.read_exn v [key; "AM"; "tuples"; idx]
+                  ( fun acc k ->
+                        View.read_exn v k
                         >>= fun tuple ->
+                            print_string tuple;
                             return(
-                                    json_to_tpl 
-                                    (Rete_node_j.tuple_of_string(tuple)) :: acc
-                                    ) )[] key_list >>= fun tpls ->
+                                json_to_tpl (Rete_node_j.tuple_of_string(tuple)) :: acc
+                              )
+                  )[] key_list >>= fun tpls ->
                     View.list v [key; "AM"; "vars"] >>=
-                    fun path ->
-                        Lwt_list.fold_left_s(fun acc [var; value] ->
-                                return ((var, [(Constant value,
-                                View.read_exn v [key; "AM"; "vars"; var; value] >>=
-                                 fun tuple ->
-                                        let tpl = 
-                                                json_to_tpl 
-                                                ((Rete_node_j.tuple_of_string tuple)) in
-                                            return tpl)]) :: acc))
+                    fun paths ->
+                        Lwt_list.fold_left_s(fun acc sub_path ->
+                                View.list v sub_path >>=
+                                function
+                                | pth (* collection of subtrees *) ->
+                                    let h:: _ = pth in
+                                    let [_; _; _; var; _] = h in
+                                    let lst_pairs =
+                                      List.map (fun [key; am; vars; var; value]->
+                                              ((Constant value,
+                                                  View.read_exn v [key; am; vars; var; value] >>=
+                                                  fun tuple ->
+                                                      let tpl =
+                                                        json_to_tpl
+                                                          ((Rete_node_j.tuple_of_string tuple)) in
+                                                      return tpl) )
+                                        ) pth in
+                                    return ((var, lst_pairs):: acc))
                           
-                          [] path
+                          [] paths
                         >>= fun vrs ->
                         (* need to adjust the vars element to not include  *)
                         (* Lwt                                             *)
@@ -122,34 +143,71 @@ struct
                                                   (value, Lwt_unix.run tpl))
                                             values)))
                                 vrs in
-                            return { pattern = 
-                                    json_to_tpl(Rete_node_j.tuple_of_string ptrn); 
-                                    tuples = tpls; vars = vs } >>=
+                            return { pattern =
+                                  json_to_tpl(Rete_node_j.tuple_of_string ptrn);
+                                tuples = tpls; vars = vs } >>=
                             fun am ->
                                 View.list v [key; "BM"; "sols"] >>=
-                                fun path ->
-                                    Lwt_list.fold_left_s (fun acc [var; value] ->
-                                            View.list v [key; "BM"; "sols"; var; value] >>=
-                                            fun key_list ->
-                                                let tuples = Lwt_list.map_s (
-                                                      fun [idx]->
-                                                          View.read_exn v [key; "BM"; "sols"; var; value; idx] >>=
-                                                          fun tuple ->
-                                                              return(json_to_tpl (Rete_node_j.tuple_of_string tuple)))key_list in
-                                                return ( (var, (Constant value, tuples)) :: acc)
-                                      ) [] path
-                                    
-                                    >>= fun sols ->
-                                    (* remove Lwt dependency in sols *)
-                                        let sols_ =
-                                          List.map
-                                            (fun (var, values) ->
-                                                  match values with
-                                                  | (value, tpls) ->
-                                                      (var, (value, Lwt_unix.run tpls)))
-                                            sols in
-                                        return { solutions = sols_ } >>= fun bm -> return (Node (am, bm, Lwt_unix.run(get_node v (node_id +1))))
+                                fun paths -> (*--this is done to retrieve var & value --*)
+                                    let path:: _ = paths in
+                                    View.list v path >>=
+                                    fun sub_path ->
+                                        let h::_ = sub_path in
+                                        let [key; bm; sols; var; value] = h in
+                                        (*----------------*)
+                                        Lwt_list.map_s (
+                                            fun path ->
+                                                let get_tuples path =
+                                                  print_string "\n+++";
+                                                  print_lst () path;
+                                                  View.list v path >>=
+                                                  fun sub_path ->
+                                                      Lwt_list.map_s (fun [key; bm; sols; var; value; idx]->
+                                                              print_string ("---->"^idx);
+                                                              View.read_exn v [key; bm; sols; var; value; idx] >>=
+                                                              fun tuple ->
+                                                                  print_string tuple;
+                                                                  return(json_to_tpl (Rete_node_j.tuple_of_string tuple)))
+                                                        sub_path
+                                                in
+                                                View.list v path >>=
+                                                fun sub_paths ->
+                                                    let rec tvrs_ptns paths =
+                                                      match paths with
+                                                      | sub_path:: t (*[sub_path]*) -> (tvrs_ptns t) @ (Lwt_unix.run(get_tuples sub_path))
+                                                      | [] -> []
+                                                    in let tuples = tvrs_ptns sub_paths
+                                                    in return (var, (Constant value, tuples))) paths
+                                        
+                                        >>= fun sols ->
+                                        (* remove Lwt dependency in sols *)
+                                            let sols_ =
+                                              List.map
+                                                (fun (var, values) ->
+                                                      match values with
+                                                      | (value, tpls) ->
+                                                      
+                                                          (var, (value, tpls)))
+                                                sols in
+                                            return { solutions = sols } >>= fun bm -> return (Node (am, bm,
+                                                      Lwt_unix.run(get_node v (node_id +1))))
     | false -> print_string key; return Empty
+  
+  let rec store_node v idx jnode =
+    let open Rete_node_t
+    in
+    let key = string_of_int idx
+    in
+    match jnode with
+    | `Node (jam , jbm, next_node) ->
+        store_mem v ("Node" ^ key) jam >>=
+        fun v ->
+            store_mem v ("Node" ^ key) jbm >>=
+            fun v ->
+                store_node v (idx + 1) next_node
+    | `BNode tpls -> return v
+    
+    | `Empty -> return v
   
   let rec store_node v idx jnode =
     let open Rete_node_t
