@@ -158,15 +158,15 @@ struct
                                     let get_var_value_pair path =
                                       print_string "\n+++";
                                       print_lst () path;
-																			let [key; bm; sols; var; value] = path in
-																			(var, value)
+                                      let [key; bm; sols; var; value] = path in
+                                      (var, value)
                                     in
                                     (* ---------------- *)
                                     let get_tuples path =
                                       print_string "\n+++";
                                       print_lst () path;
-																			let [key; bm; sols; var; value] = path in
-																			print_string ("\nvalue: " ^ value);
+                                      let [key; bm; sols; var; value] = path in
+                                      print_string ("\nvalue: " ^ value);
                                       View.list v path >>=
                                       fun sub_path ->
                                           Lwt_list.map_s (fun [key; bm; sols; var; value; idx]->
@@ -176,11 +176,11 @@ struct
                                                       print_string tuple;
                                                       return(json_to_tpl (Rete_node_j.tuple_of_string tuple)))
                                             sub_path in
-																						(* should return (var, (val, tuples)) *)
+                                            (* should return (var, (val, tuples)) *)
                                     let rec tvrs_ptns sub_paths =
                                       match sub_paths with
                                       | sub_sub_path::t (*[sub_path]*) -> (tvrs_ptns t)  @ [fst (get_var_value_pair sub_sub_path),
-																			( Constant (snd (get_var_value_pair sub_sub_path)), (Lwt_unix.run(get_tuples sub_sub_path)))]
+                                      ( Constant (snd (get_var_value_pair sub_sub_path)), (Lwt_unix.run(get_tuples sub_sub_path)))]
                                       | [] -> []
                                     in
                                     Lwt_list.fold_right_s(fun path acc ->
@@ -189,7 +189,7 @@ struct
                                                 return(tvrs_ptns sub_paths) )paths []
                                     
                                     >>= fun sols ->
-																			(* List.rev is just match the test -- remove it *)
+                                      (* List.rev is just match the test -- remove it *)
                                         return { solutions = (List.rev sols) } >>=
                                         fun bm ->
                                             return (Node (am, bm,
