@@ -579,7 +579,8 @@ let test13 _ =
 			(*let p1 = Rete.print_mappings am4	*)
 				
     end
-  in  let p1= ReteImpl.InMemory.print_mappings Test.am1 in let p =  ReteImpl.InMemory.am_to_json Test.am1 |> Rete_node_j.string_of_am_json |> Yojson.Basic.from_string |>Yojson.Basic.pretty_to_string|> print_string  in assert_equal Test.res_bm Test.q_exp_res
+  in  (*let p1= ReteImpl.InMemory.print_mappings Test.am1 in let p =  ReteImpl.InMemory.am_to_json Test.am1 |> Rete_node_j.string_of_am_json |> Yojson.Basic.from_string |>Yojson.Basic.pretty_to_string|> print_string  in*)
+	 assert_equal Test.res_bm Test.q_exp_res
   
 (*** TEST 14:   
 Testing simple parser - create t1 tuple from a string
@@ -677,7 +678,12 @@ let test18 _ =
       let (Node (_, res_bm, _)) = execute_rete res_rete_network
         
     end
-  in  (*let p = Rete.print_bm Test.res_bm in*)  let p =  ReteImpl.InMemory.bm_to_json Test.q_exp_res |> Rete_node_j.string_of_bm_json |> Yojson.Basic.from_string |>Yojson.Basic.pretty_to_string|> print_string in assert_equal Test.res_bm Test.q_exp_res
+  in  (*let p = Rete.print_bm Test.res_bm in*)  
+	let p =  ReteImpl.InMemory.bm_to_json Test.q_exp_res |> 
+	Rete_node_j.string_of_bm_json |> 
+	Yojson.Basic.from_string |>
+	Yojson.Basic.pretty_to_string|> print_string 
+	in assert_equal Test.res_bm Test.q_exp_res
 
 (** Testing Make functor **)
 let test19 _ =
@@ -744,7 +750,11 @@ let test21 _ =
 			(*let p1 = Rete.print_bm res_bm*)
 				
     end
-  in  let p =  ReteImpl.InMemory.node_to_json Test.res_node |> Rete_node_j.string_of_node_json |> Yojson.Basic.from_string |>Yojson.Basic.pretty_to_string|> print_string in assert_equal Test.res_bm Test.q_exp_res
+  in  let p =  ReteImpl.InMemory.node_to_json Test.res_node 
+	|> Rete_node_j.string_of_node_json 
+	|> Yojson.Basic.from_string 
+	|>Yojson.Basic.pretty_to_string
+	|> print_string in assert_equal Test.res_bm Test.q_exp_res
 		
 let test22 _ =
   let query = [ q1; q2 ] and q_exp_res =  [ t9; t1 ]  in
@@ -755,13 +765,42 @@ let test22 _ =
 
 
 
-(*let test21 _ =
-	let query10 = [ q1; q2 ] and q10_exp_res = [ [ t1; t9 ] ] in
-  let module G = Moana.Make(Moana_rete.S) in let graph = G.init tuples in    
-  let res_q10 = G.map graph query10
-  in
-    (*let p = print_tuples_list res_q10 in let p1 = print_tuples_list q10_exp_resin*)
-    assert_equal q10_exp_res res_q10  *)                              
+(* TEST 23: Store Rete in Irmin *)
+let test23 _ =
+	let module Test =
+	struct
+		open ReteImpl.InMemory
+		
+		let exd_tuples = [ t13; t14 ] @ tuples
+		
+		let q_exp_res =
+			{
+				solutions =
+					[ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ]));
+					("?y", ((Constant "c2"), [ t15; t14; t13; t12 ])) ];
+			}
+		
+		let am1 = create_am q1 exd_tuples
+		and am2 = create_am q3 exd_tuples
+		and am3 = create_am q4 exd_tuples
+		
+		and am4 = create_am q5 exd_tuples
+		
+		let am_list = [ am1; am2; am3; am4 ]
+		
+		(* let p = print_mappings am2 *)
+		let rete_network = gen_rete am_list
+		
+		let res_network = let n = add rete_network t12 in add n t15
+		
+		let (Node (_, res_bm, _)) = res_network
+		(* let p1 = Rete.print_mappings am4 *)
+		
+	end in let t = Rete_storage.RStorage.init Test.res_network in 
+	let ReteImpl.InMemory.Node (_, res_bm, _) = Rete_storage.RStorage.get t in
+	let p1 = ReteImpl.InMemory.print_bm res_bm in let p2 = print_string "<---\n" in assert_equal res_bm Test.q_exp_res
+
+(**)                              
 
 																																								
 let suite =
@@ -773,7 +812,7 @@ let suite =
       "test12" >:: test12; "test13" >:: test13; "test14" >:: test14;
       "test15" >:: test15; "test16" >:: test16;"test17" >:: test17;
 			"test18" >:: test18;"test19" >:: test19;"test20" >:: test20; 
-			"test21:" >:: test21; "test22:" >:: test22 ]
+			"test21:" >:: test21; "test22:" >:: test22; "test23:" >:: test23 ]
   
 let _ = run_test_tt_main suite
   
