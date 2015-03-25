@@ -186,7 +186,7 @@ struct
                                     Lwt_list.fold_right_s(fun path acc ->
                                             View.list v path >>=
                                             fun sub_paths ->
-                                                return(tvrs_ptns sub_paths) )paths []
+                                                return(tvrs_ptns sub_paths @ acc) )paths []
                                     
                                     >>= fun sols ->
                                       (* List.rev is just match the test -- remove it *)
