@@ -155,16 +155,18 @@ struct
                                 fun paths ->
                                 (* --this is done to retrieve var & value  *)
                                 (* --                                      *)
-                                    let get_var_val_pair path =
-                                      View.list v path >>=
-                                      fun sub_path ->
-                                          let h:: _ = sub_path in
-                                          let [key; bm; sols; var; value] = h in return (var, value)
+                                    let get_var_value_pair path =
+                                      print_string "\n+++";
+                                      print_lst () path;
+																			let [key; bm; sols; var; value] = path in
+																			(var, value)
                                     in
                                     (* ---------------- *)
                                     let get_tuples path =
                                       print_string "\n+++";
                                       print_lst () path;
+																			let [key; bm; sols; var; value] = path in
+																			print_string ("\nvalue: " ^ value);
                                       View.list v path >>=
                                       fun sub_path ->
                                           Lwt_list.map_s (fun [key; bm; sols; var; value; idx]->
@@ -174,22 +176,21 @@ struct
                                                       print_string tuple;
                                                       return(json_to_tpl (Rete_node_j.tuple_of_string tuple)))
                                             sub_path in
-                                    let rec tvrs_ptns paths =
-                                      match paths with
-                                      | sub_sub_path:: t (*[sub_path]*) -> (tvrs_ptns t) @ (Lwt_unix.run(get_tuples sub_sub_path))
+																						(* should return (var, (val, tuples)) *)
+                                    let rec tvrs_ptns sub_paths =
+                                      match sub_paths with
+                                      | sub_sub_path::t (*[sub_path]*) -> (tvrs_ptns t)  @ [fst (get_var_value_pair sub_sub_path),
+																			( Constant (snd (get_var_value_pair sub_sub_path)), (Lwt_unix.run(get_tuples sub_sub_path)))]
                                       | [] -> []
                                     in
                                     Lwt_list.fold_right_s(fun path acc ->
                                             View.list v path >>=
                                             fun sub_paths ->
-                                                let v_vl_pair = Lwt_unix.run (get_var_val_pair path) in
-                                                let var = fst v_vl_pair and value = snd v_vl_pair in
-                                                let ppp = print_string ("\n!!!" ^ var) in
-                                                let ppp1 = print_string ("\n!!!" ^ value) in
-                                                return((var, (Constant value, tvrs_ptns sub_paths)):: acc) )paths []
+                                                return(tvrs_ptns sub_paths) )paths []
                                     
                                     >>= fun sols ->
-                                        return { solutions = sols } >>=
+																			(* List.rev is just match the test -- remove it *)
+                                        return { solutions = (List.rev sols) } >>=
                                         fun bm ->
                                             return (Node (am, bm,
                                                   Lwt_unix.run(get_node v (node_id +1))))
