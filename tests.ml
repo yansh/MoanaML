@@ -750,22 +750,23 @@ let test21 _ =
 			(*let p1 = Rete.print_bm res_bm*)
 				
     end
-  in  let p =  ReteImpl.InMemory.node_to_json Test.res_node 
+  in  (*let p =  ReteImpl.InMemory.node_to_json Test.res_node 
 	|> Rete_node_j.string_of_node_json 
 	|> Yojson.Basic.from_string 
 	|>Yojson.Basic.pretty_to_string
-	|> print_string in assert_equal Test.res_bm Test.q_exp_res
+	|> print_string in*) assert_equal Test.res_bm Test.q_exp_res
 		
 let test22 _ =
   let query = [ q1; q2 ] and q_exp_res =  [ t9; t1 ]  in
-	let module G = Moana.Make(Moana_rete.S) in let graph = G.init ~query tuples in  
+	let module G = Moana.Make(Moana_rete.S) in 
+	let graph = G.init ~query tuples in  
   let res_q10 = G.map graph query
   in
     assert_equal q_exp_res (G.to_list res_q10)
 
 
 
-(* TEST 23: Store Rete in Irmin *)
+(* TEST 23: Store Rete network into Irmin  and retrieve it*)
 let test23 _ =
 	let module Test =
 	struct
@@ -798,7 +799,7 @@ let test23 _ =
 		
 	end in let t = Rete_storage.RStorage.init Test.res_network in 
 	let ReteImpl.InMemory.Node (_, res_bm, _) = Rete_storage.RStorage.get t in
-	let p1 = ReteImpl.InMemory.print_bm res_bm in let p2 = print_string "<---\n" in assert_equal res_bm Test.q_exp_res
+	(*let p1 = ReteImpl.InMemory.print_bm res_bm in let p2 = print_string "<---\n" in*) assert_equal res_bm Test.q_exp_res
 
 (**)                              
 
