@@ -1,14 +1,19 @@
-(* * Copyright (c) 2014 Yan Shvartzshnaider * * Permission to use, copy,   *)
-(* modify, and distribute this software for any * purpose with or without  *)
-(* fee is hereby granted, provided that the above * copyright notice and   *)
-(* this permission notice appear in all copies. * * THE SOFTWARE IS        *)
-(* PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES * WITH REGARD  *)
-(* TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF * MERCHANTABILITY  *)
-(* AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR * ANY SPECIAL,  *)
-(* DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES * WHATSOEVER  *)
-(* RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN * ACTION OF  *)
-(* CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF * OR IN   *)
-(* CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.                *)
+(*
+* Copyright (c) 2015 Yan Shvartzshnaider
+*
+* Permission to use, copy, modify, and distribute this software for any
+* purpose with or without fee is hereby granted, provided that the above
+* copyright notice and this permission notice appear in all copies.
+*
+* THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+* WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+* MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+* ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+* WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+* ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+* OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *)
+                                  
 open Yojson
   
 exception Wrong_tuple
@@ -18,6 +23,8 @@ exception Wrong_template
 exception Wrong_value
   
 exception AM_not_found
+
+exception BM_not_found
   
 type obj_t = string
 
@@ -87,7 +94,7 @@ let execute_query (db : tuple list) (qry : tuple list) : (tuple list) list =
         obj = try_eval (fun q -> q.obj) q var_scope;
         ctxt = q.ctxt;(*FIXME ignored for the time being*)
         
-        time_stp = q.time_stp;(*FIXME ignored for the time being*)
+        time_stp = q.time_stp; (*FIXME ignored for the time being*)
         
         sign = q.sign;
       }

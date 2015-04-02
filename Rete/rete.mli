@@ -1,5 +1,5 @@
 (*
-* Copyright (c) 2014 Yan Shvartzshnaider
+* Copyright (c) 2015 Yan Shvartzshnaider
 *
 * Permission to use, copy, modify, and distribute this software for any
 * purpose with or without fee is hereby granted, provided that the above
@@ -26,3 +26,15 @@ module type Rete = sig
 	val join: am -> bm -> bm
   
 	end;;
+
+module type Storage =  sig
+	
+	type t
+	
+	val init: Rete.t -> t
+	
+	val get: t -> Rete.t 
+	
+	val add: t-> Config.tuple -> t
+	
+	end;;	

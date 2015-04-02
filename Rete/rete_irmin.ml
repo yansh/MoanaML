@@ -1,15 +1,19 @@
-(* * Copyright (c) 2014 Yan Shvartzshnaider * * Permission to use, copy,   *)
-(* modify, and distribute this software for any * purpose with or without  *)
-(* fee is hereby granted, provided that the above * copyright notice and   *)
-(* this permission notice appear in all copies. * * THE SOFTWARE IS        *)
-(* PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES * WITH REGARD  *)
-(* TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF * MERCHANTABILITY  *)
-(* AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR * ANY SPECIAL,  *)
-(* DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES * WHATSOEVER  *)
-(* RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN * ACTION OF  *)
-(* CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF * OR IN   *)
-(* CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. Irmin based    *)
-(* storage                                                                 *)
+(*
+* Copyright (c) 2015 Yan Shvartzshnaider
+*
+* Permission to use, copy, modify, and distribute this software for any
+* purpose with or without fee is hereby granted, provided that the above
+* copyright notice and this permission notice appear in all copies.
+*
+* THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+* WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+* MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+* ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+* WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+* ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+* OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *)
+                                                               
 open Moana
 
 open Lwt
@@ -58,8 +62,8 @@ struct
 					(fun i tuple ->
 								let i = string_of_int i
 								in
-								(* let p=print_endline (Yojson.Basic.to_string (to_json  *)
-								(* () tpl)) in                                           *)
+								(* let p=print_endline (Yojson.Basic.to_string (to_json () *)
+								(* tpl)) in                                                *)
 								View.update v [ i ]
 									(Yojson.Basic.to_string (Helper.to_json tuple)))
 					tuples
@@ -90,8 +94,8 @@ struct
 								View.update_path (t "update tuples") [ "Tuples" ] view
 								>>=
 								fun () ->
-								(* Store.View.of_path t ["Tuples"] >>= fun v ->    *)
-								(* print_tuples (Lwt_unix.run (t_of_view v));      *)
+								(* Store.View.of_path t ["Tuples"] >>= fun v ->            *)
+								(* print_tuples (Lwt_unix.run (t_of_view v));              *)
 										return (t "??"))
 	
 	(* add tuple view to the storage *)
