@@ -32,7 +32,7 @@ module type Rete =
 *
 *)
 open Config
-  
+  	
 module InMemory =
   struct
     type am =
@@ -89,8 +89,8 @@ module InMemory =
             p = pred;
             o = obj;
             cxt = Some ctxt;
-            time_smp = Some ts;
-            sign = Some sg } ->
+            time_smp = ts;
+            sign = sg } ->
             {
               subj = json_to_val subj;
               pred = json_to_val pred;
@@ -186,7 +186,11 @@ module InMemory =
               (json_to_node next_node))
         | `BNode tuples -> BNode (to_tpl_list tuples)
         | `Empty -> Empty
-      
+
+			let node_json_to_string jnode = 
+							 Rete_node_j.string_of_node_json jnode |>    
+			              Yojson.Basic.from_string |>Yojson.Basic.pretty_to_string 
+			 
     (* helper to filter tuples list to form the pattern *)
     let filter ptrn tuples =
       let cmp p_attr t_attr =
@@ -572,3 +576,5 @@ module InMemory =
       
   end
   
+	
+
