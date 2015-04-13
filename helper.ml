@@ -1,29 +1,31 @@
-(* * Copyright (c) 2014 Yan Shvartzshnaider * * Permission to use, copy,   *)
-(* modify, and distribute this software for any * purpose with or without  *)
-(* fee is hereby granted, provided that the above * copyright notice and   *)
-(* this permission notice appear in all copies. * * THE SOFTWARE IS        *)
-(* PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES * WITH REGARD  *)
-(* TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF * MERCHANTABILITY  *)
-(* AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR * ANY SPECIAL,  *)
-(* DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES * WHATSOEVER  *)
-(* RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN * ACTION OF  *)
-(* CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF * OR IN   *)
-(* CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.                *)
+(*
+* Copyright (c) 2015 Yan Shvartzshnaider
+*
+* Permission to use, copy, modify, and distribute this software for any
+* purpose with or without fee is hereby granted, provided that the above
+* copyright notice and this permission notice appear in all copies.
+*
+* THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+* WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+* MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+* ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+* WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+* ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+* OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *)
 open Config
 
 open Yojson
 
+
 (** tuple object to string **)
-let to_string =
-	function
-	| {
-		subj = Constant s;
-		pred = Constant p;
-		obj = Constant o;
-		ctxt = Constant c;
-		time_stp = _;
-		sign = _ } -> Printf.sprintf "< %s %s %s >" s p o
-	| _ -> "Not printing this tuple."
+let to_string tuple =
+	let get_val value = match value with
+		| Constant c -> c
+		| Variable v -> ("?"^v) in
+					Printf.sprintf "< %s %s %s %s>" (get_val  tuple.subj)  
+					(get_val tuple.pred)  (get_val tuple.obj)  (get_val tuple.ctxt)
+
 
 let value_to_str = function | Variable x -> x | Constant x -> x
 
