@@ -9,7 +9,7 @@ type tuple = Rete_node_t.tuple = {
   s: value;
   p: value;
   o: value;
-  cxt: value option;
+  cxt: value;
   time_smp: value option;
   sign: value option
 }
@@ -31,8 +31,8 @@ type node_json = Rete_node_t.node_json
 let write_val_type = (
   fun ob sum ->
     match sum with
-      | `Constant -> Bi_outbuf.add_string ob "\"Constant\""
-      | `Variable -> Bi_outbuf.add_string ob "\"Variable\""
+      | `Constant -> Bi_outbuf.add_string ob "<\"Constant\">"
+      | `Variable -> Bi_outbuf.add_string ob "<\"Variable\">"
 )
 let string_of_val_type ?(len = 1024) x =
   let ob = Bi_outbuf.create len in
@@ -306,7 +306,7 @@ let read_value = (
 let value_of_string s =
   read_value (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
 let write__1 = (
-  Ag_oj_run.write_std_option (
+  Ag_oj_run.write_option (
     write_value
   )
 )
@@ -465,17 +465,15 @@ let write_tuple : _ -> tuple -> _ = (
       write_value
     )
       ob x.o;
-    (match x.cxt with None -> () | Some x ->
-      if !is_first then
-        is_first := false
-      else
-        Bi_outbuf.add_char ob ',';
-      Bi_outbuf.add_string ob "\"cxt\":";
-      (
-        write_value
-      )
-        ob x;
-    );
+    if !is_first then
+      is_first := false
+    else
+      Bi_outbuf.add_char ob ',';
+    Bi_outbuf.add_string ob "\"cxt\":";
+    (
+      write_value
+    )
+      ob x.cxt;
     (match x.time_smp with None -> () | Some x ->
       if !is_first then
         is_first := false
@@ -511,7 +509,7 @@ let read_tuple = (
     let field_s = ref (Obj.magic 0.0) in
     let field_p = ref (Obj.magic 0.0) in
     let field_o = ref (Obj.magic 0.0) in
-    let field_cxt = ref (None) in
+    let field_cxt = ref (Obj.magic 0.0) in
     let field_time_smp = ref (None) in
     let field_sign = ref (None) in
     let bits0 = ref 0 in
@@ -593,15 +591,12 @@ let read_tuple = (
             );
             bits0 := !bits0 lor 0x4;
           | 3 ->
-            if not (Yojson.Safe.read_null_if_possible p lb) then (
-              field_cxt := (
-                Some (
-                  (
-                    read_value
-                  ) p lb
-                )
-              );
-            )
+            field_cxt := (
+              (
+                read_value
+              ) p lb
+            );
+            bits0 := !bits0 lor 0x8;
           | 4 ->
             if not (Yojson.Safe.read_null_if_possible p lb) then (
               field_time_smp := (
@@ -704,15 +699,12 @@ let read_tuple = (
               );
               bits0 := !bits0 lor 0x4;
             | 3 ->
-              if not (Yojson.Safe.read_null_if_possible p lb) then (
-                field_cxt := (
-                  Some (
-                    (
-                      read_value
-                    ) p lb
-                  )
-                );
-              )
+              field_cxt := (
+                (
+                  read_value
+                ) p lb
+              );
+              bits0 := !bits0 lor 0x8;
             | 4 ->
               if not (Yojson.Safe.read_null_if_possible p lb) then (
                 field_time_smp := (
@@ -740,7 +732,7 @@ let read_tuple = (
       done;
       assert false;
     with Yojson.End_of_object -> (
-        if !bits0 <> 0x7 then Ag_oj_run.missing_fields p [| !bits0 |] [| "s"; "p"; "o" |];
+        if !bits0 <> 0xf then Ag_oj_run.missing_fields p [| !bits0 |] [| "s"; "p"; "o"; "cxt" |];
         (
           {
             s = !field_s;
@@ -806,7 +798,7 @@ let _4_of_string s =
 let write__5 = (
   Ag_oj_run.write_assoc_list (
     fun ob x ->
-      Bi_outbuf.add_char ob '[';
+      Bi_outbuf.add_char ob '(';
       (let x, _ = x in
       (
         Yojson.Safe.write_string
@@ -818,7 +810,7 @@ let write__5 = (
         write__2
       ) ob x
       );
-      Bi_outbuf.add_char ob ']';
+      Bi_outbuf.add_char ob ')';
   )
 )
 let string_of__5 ?(len = 1024) x =
@@ -1179,17 +1171,17 @@ let write_memory = (
   fun ob sum ->
     match sum with
       | `AM x ->
-        Bi_outbuf.add_string ob "[\"AM\",";
+        Bi_outbuf.add_string ob "<\"AM\":";
         (
           write_am_json
         ) ob x;
-        Bi_outbuf.add_char ob ']'
+        Bi_outbuf.add_char ob '>'
       | `BM x ->
-        Bi_outbuf.add_string ob "[\"BM\",";
+        Bi_outbuf.add_string ob "<\"BM\":";
         (
           write_bm_json
         ) ob x;
-        Bi_outbuf.add_char ob ']'
+        Bi_outbuf.add_char ob '>'
 )
 let string_of_memory ?(len = 1024) x =
   let ob = Bi_outbuf.create len in
@@ -1342,12 +1334,12 @@ let memory_of_string s =
 let rec write_node_json = (
   fun ob sum ->
     match sum with
-      | `Empty -> Bi_outbuf.add_string ob "\"Empty\""
+      | `Empty -> Bi_outbuf.add_string ob "<\"Empty\">"
       | `Node x ->
-        Bi_outbuf.add_string ob "[\"Node\",";
+        Bi_outbuf.add_string ob "<\"Node\":";
         (
           fun ob x ->
-            Bi_outbuf.add_char ob '[';
+            Bi_outbuf.add_char ob '(';
             (let x, _, _ = x in
             (
               write_memory
@@ -1365,15 +1357,15 @@ let rec write_node_json = (
               write_node_json
             ) ob x
             );
-            Bi_outbuf.add_char ob ']';
+            Bi_outbuf.add_char ob ')';
         ) ob x;
-        Bi_outbuf.add_char ob ']'
+        Bi_outbuf.add_char ob '>'
       | `BNode x ->
-        Bi_outbuf.add_string ob "[\"BNode\",";
+        Bi_outbuf.add_string ob "<\"BNode\":";
         (
           write__2
         ) ob x;
-        Bi_outbuf.add_char ob ']'
+        Bi_outbuf.add_char ob '>'
 )
 and string_of_node_json ?(len = 1024) x =
   let ob = Bi_outbuf.create len in

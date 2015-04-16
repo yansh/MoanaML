@@ -9,7 +9,7 @@ type tuple = {
   s: value;
   p: value;
   o: value;
-  cxt: value option;
+  cxt: value;
   time_smp: value option;
   sign: value option
 }
@@ -29,5 +29,3 @@ type node_json = [
   | `Node of (memory * memory * node_json)
   | `BNode of tuple list
 ]
-
-
