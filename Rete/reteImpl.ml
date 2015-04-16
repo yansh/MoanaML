@@ -74,7 +74,7 @@ module InMemory =
             s = val_to_json tpl.subj;
             p = val_to_json tpl.pred;
             o = val_to_json tpl.obj;
-            cxt = Some (val_to_json tpl.ctxt);
+            cxt = val_to_json tpl.ctxt;
             time_smp = None;
             sign = None;
           }
@@ -88,7 +88,7 @@ module InMemory =
             s = subj;
             p = pred;
             o = obj;
-            cxt = Some ctxt;
+            cxt = ctxt;
             time_smp = ts;
             sign = sg } ->
             {
