@@ -17,3 +17,4 @@ For more info check out [this blog post](http://yansh.github.io/articles/moana/)
 You can also read this position paper: http://dl.acm.org/citation.cfm?id=2676735
 
 [![Build Status](https://travis-ci.org/yansh/MoanaML.png?branch=master)](https://travis-ci.org/yansh/MoanaML)
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/yansh/moanaml/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
