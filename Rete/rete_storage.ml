@@ -15,6 +15,10 @@ module View = Irmin.View(Store)
 
 module ReteView =
 struct
+  let rec print_lst lst =
+    function
+    | h:: t -> print_string ("\n-->" ^h); print_lst () t
+    | [] -> print_string "<<-"
   
   let store_mem v node_id mem =
     let open Rete_node_t
@@ -186,20 +190,17 @@ struct
             return { solutions = (List.rev sols) }
   
   let rec get_node v node_id =
-    let key = ("Node" ^ string_of_int node_id)
-    in let rec print_lst lst =
-      function
-      | h:: t -> print_string ("\n-->" ^h); print_lst () t
-      | [] -> print_string "<<-"
-    in
+    let key = string_of_int node_id in
     View.mem v [key; "AM"; "pattern"] >>= function
     | true ->
+        let next_node =
+          Lwt_unix.run(get_node v (node_id +1)) in
         get_AM v key >>=
         fun am -> get_BM v key
             >>=
             fun bm ->
                 return (Node (am, bm,
-                      Lwt_unix.run(get_node v (node_id +1))))
+                      next_node))
     | false -> return Empty
   
   (** Takes JNode (Rete Json node) and unpacks it into a list of nodes *)
@@ -208,7 +209,7 @@ struct
       (match jnode with
         | `Node (jam , jbm, next_node) -> get_nodes next_node (jnode:: acc)
         | `BNode tpls -> acc
-        | `Empty -> acc)  in get_nodes jnode []
+        | `Empty -> acc) in get_nodes jnode []
   
   (** use recusion to store JNODE **)
   let rec r_store_node v idx jnode =
@@ -220,9 +221,9 @@ struct
     | `Node (jam , jbm, next_node) ->
         r_store_node v (idx + 1) next_node >>=
         fun v ->
-            store_mem v ("Node" ^ key) jam >>=
+            store_mem v key jam >>=
             fun v ->
-                store_mem v ("Node" ^ key) jbm
+                store_mem v key jbm
     
     | `BNode tpls -> return v
     
@@ -236,9 +237,9 @@ struct
     in
     match jnode with
     | `Node (jam , jbm, _) ->
-        store_mem v ("Node" ^ key) jam >>=
+        store_mem v key jam >>=
         fun v ->
-            store_mem v ("Node" ^ key) jbm
+            store_mem v key jbm
     
     | `BNode tpls -> return v
     
@@ -254,7 +255,6 @@ struct
       (* r_store_node v 0 jnode *)
           List.iteri (fun i node ->
                   Lwt_unix.run(store_node v i node); ()) (List.rev nodes); return v
-          
           >>= fun v -> return v)
   
   let t_of_view v =
@@ -262,7 +262,7 @@ struct
   
 end
 
-module RStorage= struct
+module RStorage = struct
   
   (** Initialise Rete network; store initial ones **)
   let init rnode =
@@ -284,7 +284,7 @@ module RStorage= struct
             | node -> node)
   
   (** Add a tuple to suitable AM in the Rete network *)
- (* Not a very optimal way of doing things. We fetch the Rete node to memoryt *)
+  (* Not a very optimal way of doing things. We fetch the Rete node to memoryt *)
   let add t tuple =
     let node = get t in
     let new_node = ReteImpl.InMemory.add node tuple in
@@ -295,58 +295,5 @@ module RStorage= struct
             >>=
             fun () ->
                 return t)
-    
-    
-  (* TODO: Fix me*)
-  (* This is an attempt to avoid loading node into a memory and modify Irmin directly*)
-  (*  while addi a tuple to suitable AM in the Rete network *)
-  let add_rec t tuple =
-    let p = print_string ("adding tuple" ^ (Helper.to_string tuple)) in
-    let rec add_rec v idx tuple found =
-      let node_id = string_of_int idx in
-      let key = ("Node" ^ node_id) in
-      View.mem v [key; "AM"; "pattern"] >>= function
-      | true ->
-          let am = Lwt_unix.run(ReteView.get_AM v key) in
-          if (ReteImpl.InMemory.compare am.pattern tuple) then (* match *)
-          let p = print_string ("Found! [" ^ key ^"]\n") in
-          let open Rete_node_t in
-          let new_am = create_am am.pattern (tuple:: am.tuples) in
-          let pp = print_string "---" and ppp = ReteImpl.InMemory.print_mappings new_am and p = print_string "<--\n" in
-          let next_key = ("Node" ^ (string_of_int (idx +1))) in
-          let bm = Lwt_unix.run(ReteView.get_BM v next_key) in
-          let pp = print_string ("\n BM-before:---" ^ next_key) and ppp = ReteImpl.InMemory.print_bm bm and p = print_string "**\n" in
-          let new_bm = ReteImpl.InMemory.join new_am bm in
-          let pp = print_string "\n BM:---" and ppp = ReteImpl.InMemory.print_bm new_bm and p = print_string "==\n" in
-          ReteView.store_mem v key (`AM (ReteImpl.InMemory.am_to_json new_am))
-          >>= fun v ->
-              ReteView.store_mem v next_key (`BM (ReteImpl.InMemory.bm_to_json new_bm)) >>=
-              fun v ->
-                  add_rec v (idx +1) tuple true (* true send a message to start the trigger effect *)
-          else
-          if found then
-            (***)
-            let open Rete_node_t in
-            let p = print_string ("Trigger [" ^ key ^"]\n") in
-            let am = Lwt_unix.run(ReteView.get_AM v key) in
-            let bm = Lwt_unix.run(ReteView.get_BM v key) in
-            let new_bm = ReteImpl.InMemory.join am bm in
-            (* let pp= print_string "---" and ppp =                      *)
-            (* ReteImpl.InMemory.print_bm bm and p = print_string "<--"  *)
-            (* in                                                        *)
-            let next_key = ("Node" ^ (string_of_int (idx))) in
-            ReteView.store_mem v key (`AM (ReteImpl.InMemory.am_to_json am))
-            >>= fun v ->
-                ReteView.store_mem v next_key (`BM (ReteImpl.InMemory.bm_to_json new_bm)) >>=
-                fun v ->
-                    add_rec v (idx +1) tuple true (* true send a message to start the trigger effect *)
-          else
-            add_rec v (idx +1) tuple false
-      | false -> print_string "DONE"; return_unit  in
-    Lwt_unix.run(View.of_path t [ "Rete" ] >>=
-        fun v ->
-            add_rec v 0 tuple false >>=
-            fun () ->
-                View.merge_path_exn t [ "Rete" ] v
-                >>= fun() -> return t )
+  
 end
