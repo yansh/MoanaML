@@ -109,7 +109,8 @@ let q1 =
 	}"
   
 
-let prnt = Helper.print_tuples_list contacts  
+let prnt = Helper.print_tuples_list contacts
+  
 let results = (ReteImpl.InMemory.exec_qry q1 (List.flatten contacts)) |> (ReteImpl.InMemory.exec_bm q2)
   
 let (ReteImpl.InMemory.Node (_, res_bm, _)) = results
