@@ -199,7 +199,7 @@ struct
         fun am -> get_BM v key
             >>=
             fun bm ->
-                return (Node (am, bm,
+                return (Node (am, BM bm,
                       next_node))
     | false -> return Empty
   

@@ -93,32 +93,37 @@ let contacts = [ jon; amir; anil; carlos; richard ]
 (*let contacts = Helper.tuples_from_file "contacts.db"*)
 (* sample query *)
 let q2 =
-  "MAP {
-	a,knows,?y,contacts
-	?y,fn,?name,contacts
-	?y,email,?email,contacts
-	}"
+"MAP {
+?y,fn,Carlos,contacts
+?y,last,?last,contacts
+?y,email,?email,contacts
+?y,image,?image,contacts
+?y,twitter,?twitter,contacts
+}"
+
   
 (* execute policy to bring all the tuples that b can view *)
 let q1 =
-  "MAP {
-	 b, canView,?x, policies
-	 ?x, knows, ?o, contacts
-	 ?o, email, ?email, contacts	 
-	 ?o, fn, ?n, contacts
-	}"
+"MAP {
+?y, canView,?x, policies
+?x, ?anypred, ?anyobj, contacts
+}"
   
 
-let prnt = Helper.print_tuples_list contacts
+(* let prnt = Helper.print_tuples_list contacts*)
   
-let results = (ReteImpl.InMemory.exec_qry q1 (List.flatten contacts)) |> (ReteImpl.InMemory.exec_bm q2)
+let results = (ReteImpl.InMemory.exec_qry q2 (List.flatten contacts)) |> (ReteImpl.InMemory.exec_bm q2)
+
+
   
-let (ReteImpl.InMemory.Node (_, res_bm, _)) = results
+let (ReteImpl.InMemory.Node (_, BM res_bm, _)) = results
   
-(*let p2 =
-  Helper.print_tuples (Helper.TupleSet.elements (Rete.get_tuples results))*)
-(*let p = Rete.print_bm res_bm*)
-let r_map = ReteImpl.InMemory.get_res_map results [ "?name"; "?y"; "?email" ]
+let p2 =
+  Helper.print_tuples (Helper.TupleSet.elements (ReteImpl.InMemory.get_tuples results))
+
+(*let p = ReteImpl.InMemory.print_bm res_bm*)
+
+let r_map = ReteImpl.InMemory.get_res_map results [ "?y"; "?fn"; "?last"; "?email"; "?image"; "?mobile"; "?twitter"]
   
 let _ = Helper.StringMap.iter Helper.print_var r_map 
   

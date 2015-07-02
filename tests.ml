@@ -305,11 +305,11 @@ let test6 _ =
   struct
     open ReteImpl.InMemory
     
-    let q_exp_res = { solutions = [ ("?x", ((Constant "a"), [ t1 ])) ]; }
+    let q_exp_res = BM { solutions = [ ("?x", ((Constant "a"), [ t1 ])) ]; }
     
     let am = create_am q1 tuples
     
-    let bm = { solutions = []; }
+    let bm =  InitBM (*{ solutions = []; }*)
     
     let new_bm = join am bm
     
@@ -328,9 +328,9 @@ let test7 _ =
     and am2 = create_am q2 tuples
     
     and q_exp_res =
-      { solutions = [ ("?x", ((Constant "a"), [ t9; t1 ])) ]; }
+      BM { solutions = [ ("?x", ((Constant "a"), [ t9; t1 ])) ]; }
     
-    let bm = { solutions = []; }
+    let bm = InitBM
     
     let res_bm = join am2 (join am1 bm)
     
@@ -347,7 +347,7 @@ let test8 _ =
     let exd_tuples = [ t12; t13; t14; t15 ] @ tuples
     
     let q_exp_res =
-      {
+      BM {
         solutions =
           [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ]));
           ("?y", ((Constant "c2"), [ t15; t14; t13; t12 ])) ];
@@ -362,7 +362,7 @@ let test8 _ =
     
     (* let p = print_mappings am2 *)
     let res_bm =
-      join am4 (join am3 (join am2 (join am1 { solutions = []; })))
+      join am4 (join am3 (join am2 (join am1 InitBM)))
     
   end
   in (*in let p = print_bm res_bm*) assert_equal Test.res_bm Test.q_exp_res
@@ -375,7 +375,7 @@ let test9 _ =
     open ReteImpl.InMemory
     
     let q_exp_res =
-      { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; }
+      BM { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; }
     
     let am1 = create_am q1 tuples
     
@@ -390,7 +390,7 @@ let test9 _ =
     let res_bm = execute_am_list (List.rev am_list)
     
   end
-  in (*let p = print_bm res_bm in *) assert_equal Test.res_bm Test.q_exp_res
+  (*in let p = ReteImpl.InMemory.print_bm in let p2 = ReteImpl.InMemory.print_bm Test.q_exp_res *) in assert_equal Test.res_bm Test.q_exp_res
 
 (*** TEST 10:
 
@@ -410,7 +410,7 @@ let test10 _ =
     open ReteImpl.InMemory
     
     let q_exp_res =
-      { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; }
+      BM { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; }
     
     let am1 = create_am q1 tuples
     
@@ -467,7 +467,7 @@ let test13 _ =
     let exd_tuples = [ t13; t14 ] @ tuples
     
     let q_exp_res =
-      {
+     BM {
         solutions =
           [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ]));
           ("?y", ((Constant "c2"), [ t15; t14; t13; t12 ])) ];
@@ -532,8 +532,8 @@ let test16 _ =
   let res =
     str_query_list
       "MAP {
-  ?x, type, Car, context
-  ?x, hasColor, Red, context
+        ?x, type, Car, context
+        ?x, hasColor, Red, context
   } "
   
   and exp_res = [ q1; q2 ] in assert_equal res exp_res
@@ -549,9 +549,9 @@ let test17 _ =
   let res =
     to_tuple_lst
       "{(a,type,Car,context) 
-			 (a,hasColor,c,context) 
-			 (b,type,Chair,context)
-			 (b,hasColor,c,context)}"
+       (a,hasColor,c,context) 
+       (b,type,Chair,context)
+       (b,hasColor,c,context)}"
   and exp_res = [t1; t2; t3; t4 ] in assert_equal res exp_res
 
 (*** TEST 18:
@@ -571,7 +571,7 @@ let test18 _ =
   struct
     open ReteImpl.InMemory
     let q_exp_res =
-      { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; }
+     BM { solutions = [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ])) ]; }
     let res_rete_network =
       to_rete "MAP {
         ?x, type, Car, context
@@ -583,11 +583,11 @@ let test18 _ =
     
   end
   in  (*let p = Rete.print_bm Test.res_bm in*)
-  let p = ReteImpl.InMemory.bm_to_json Test.q_exp_res |>
+  (*let p = ReteImpl.InMemory.bm_to_json Test.q_exp_res |>
     Rete_node_j.string_of_bm_json |>
     Yojson.Basic.from_string |>
     Yojson.Basic.pretty_to_string |> print_string
-  in assert_equal Test.res_bm Test.q_exp_res
+  in*) assert_equal Test.res_bm Test.q_exp_res
 
 (** Testing Make functor **)
 let test19 _ =
@@ -631,7 +631,7 @@ let test21 _ =
     let exd_tuples = [ t13; t14 ; t12; t15] @ tuples
     
     let q_exp_res =
-      {
+     BM {
         solutions =
           [ ("?y", ((Constant "c"), [ t7; t5; t2; t1 ]));
           ("?y", ((Constant "c2"), [ t15; t14; t13; t12 ])) ];
@@ -670,7 +670,7 @@ let test22 _ =
 ?y, rgbValue, White
 }*)
 (* *)
-
+ 
 let test23 _ =
   
   let module Test =
@@ -680,7 +680,7 @@ let test23 _ =
     open ReteImpl.InMemory
     let exd_tuples = [ t13; t14 ] @ tuples
     let q_exp_res =
-      {
+     BM {
       
         solutions =
           
@@ -710,7 +710,7 @@ let test24 _ =
   let module Test =
   struct
     open ReteImpl.InMemory
-    let exd_tuples = [ t13; t14] @ tuples
+    let exd_tuples = [  t15; t13; t14] @ tuples
     let q_exp_res =
       {
       
@@ -721,17 +721,17 @@ let test24 _ =
           ("?y", ((Constant "c2"), [ t15; t14; t13; t12 ])) ];
       
       }
-    let rete_network = to_rete_dataflow [q1; q3; q4; q5] exd_tuples
-    let res_network = let n = add rete_network t12 in add n t15
+    let rete_network = to_rete_dataflow [q1; q3; q4; q5]  exd_tuples
+    let res_network = add rete_network t12 (*in add n t15*)
     let Node (_, res_bm, _) = res_network
     let in_irmin_network = Rete_storage.RStorage.init rete_network
-    let db = Rete_storage.RStorage.add in_irmin_network t12		
-		let in_irmin_res = Rete_storage.RStorage.add db t15 
+    let db = Rete_storage.RStorage.add in_irmin_network t12	
+		let in_irmin_res = Rete_storage.RStorage.add db t15
     let Node (_, irmin_res_bm, _) = Rete_storage.RStorage.get db
     
   end
   
-  in let pp = print_string "RESULT:\n" in let p1 = ReteImpl.InMemory.print_bm Test.irmin_res_bm in assert_equal Test.res_bm Test.irmin_res_bm
+  in (*let pp = print_string "RESULT:\n" in let p1 = ReteImpl.InMemory.print_bm Test.irmin_res_bm and p = print_string "\n" in*)  assert_equal Test.res_bm Test.irmin_res_bm
 
 let suite =
   "Unit tests" >:::

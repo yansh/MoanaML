@@ -45,9 +45,9 @@ module InMemory =
       }
     
     (* BM contains (var, value, solution for the value *)
-    type bm =
-      { solutions : (string * ((t element_type) * (tuple list))) list
-      }
+		type solutions = { solutions : (string * ((t element_type) * (tuple list))) list}
+		
+    type bm = |InitBM | BM of solutions 
     
     type t = | Empty | Node of am * bm * t | BNode of Config.tuple list
     
@@ -145,8 +145,10 @@ module InMemory =
           vars = json_to_vars jam.vrs;
         }
       
-    let bm_to_json bm = let open Rete_node_t
-      in
+    let bm_to_json bm = let open Rete_node_t in
+		match bm with
+		| InitBM -> {sols = []}
+		| BM bm ->	       
         {
           sols =
             List.map
@@ -154,19 +156,22 @@ module InMemory =
                  match values with
                  | (value, tpls) ->
                      (var, ((get_val () value), (to_json_tpl_list tpls))))
-              bm.solutions;
+             bm.solutions;
         }
       
-    let json_to_bm jbm = let open Rete_node_t
-      in
-        {
+   let json_to_bm jbm = let open Rete_node_t
+		in
+		match jbm with
+		| `InitBM -> BM {solutions = []}
+		| `BM jbm ->	             
+       BM {
           solutions =
             List.map
               (fun (var, values) ->
                  match values with
                  | (value, tpls) ->
                      (var, ((Constant value), (to_tpl_list tpls))))
-              jbm.sols;
+              jbm;
         }
       
     let rec node_to_json node =
@@ -178,7 +183,7 @@ module InMemory =
       | BNode tuples -> `BNode (to_json_tpl_list tuples)
       | Empty -> `Empty
       
-    let rec json_to_node jnode = let open Rete_node_t
+   let rec json_to_node jnode = let open Rete_node_t
       in
         match jnode with
         | `Node ((`AM jam), (`BM jbm), (`Node next_node)) ->
@@ -253,22 +258,23 @@ module InMemory =
       
     (* helper to print BM *)
     let print_bm bm =
-      List.map
+			match bm with 
+			| InitBM -> print_string "Empty (init) BM"
+			| BM bm ->
+      List.iter
         (fun (var, (value, tuples)) ->
            (* (string * (t element_type * tuple list) ) *)
            (print_endline "";
             print_endline var;
             Helper.print_value value;
             print_string "[";
-            List.map (fun t -> print_string (Helper.to_string t)) tuples))
+            List.iter (fun t -> print_string (Helper.to_string t)) tuples))
         bm.solutions
       
     (* joining BM and AM to create a new BM *)
-    let join am bm =
-      {
+		let gen_first_bm am= 
+			 {
         solutions =
-          match bm with
-          | { solutions = [] } ->
               List.fold_right
                 (fun (var, values) acc ->
                    (* string * ((t element_type * tuple) list) am: (t         *)
@@ -277,8 +283,21 @@ module InMemory =
                      (List.map
                         (fun (value, tuple) -> (var, (value, [ tuple ])))
                         values))
-                am.vars []
-          | { solutions = solutions } ->
+                am.vars []} 
+    let join am bm =
+          match bm with
+          | InitBM -> 
+            BM {   solutions = List.fold_right
+                (fun (var, values) acc ->
+                   (* string * ((t element_type * tuple) list) am: (t         *)
+                   (* element_type * tuple list)                              *)
+                   acc @
+                     (List.map
+                        (fun (value, tuple) -> (var, (value, [ tuple ])))
+                        values))
+                am.vars []} 
+          | BM {solutions = solutions} ->
+   					BM {solutions =
               (* (string * (t element_type * tuple list) ) list * -- existing    *)
               (* solution                                                        *)
               List.fold_right (* string * ((t element_type * tuple) list) *)
@@ -367,21 +386,19 @@ module InMemory =
                                              sol_list)
                                       (apply_ptrn am.pattern tuple) []))
                               am_values []))
-                am.vars [];
-      }
+                am.vars [];}
+
       
     (** gerenate RETE data lfow from  list of AMs **)
     let gen_rete ams =
       let first_am = List.hd ams in
-      let empty_bm = { solutions = []; } in
+     (* let empty_bm = { solutions = []; } in*)
       let tail = List.tl ams in
-      (* let p = print_bm (join first_am empty_bm)in let p1= print_endline   *)
-      (* "+++" in                                                            *)
       let res_list =
         List.fold_right
           (fun am acc ->
              let (_, prev_bm) = List.hd acc in (am, (join am prev_bm)) :: acc)
-          (List.rev tail) [ (first_am, (join first_am empty_bm)) ]
+          (List.rev tail) [ (first_am, (join first_am InitBM)) ]
       in
         List.fold_right (fun (am, bm) acc -> Node (am, bm, acc)) res_list
           Empty
@@ -411,7 +428,7 @@ module InMemory =
       let get_bm node =
         match node with
         | Node (_, bm, _) -> bm
-        | Empty -> { solutions = []; } in
+        | Empty -> InitBM in (*{ solutions = []; } in*)
       let rec regen rete_network =
         match rete_network with
         | Node (current_am, bm, node) ->
@@ -442,7 +459,7 @@ module InMemory =
       let get_bm node =
         match node with
         | Node (_, bm, _) -> bm
-        | Empty -> { solutions = []; }
+        | Empty -> BM { solutions = []; }
       in
         match rete_network with
         | Node (am, _, node) ->
@@ -517,7 +534,7 @@ module InMemory =
         List.filter (fun v -> not (Helper.StringMap.mem v values_map)) vars
       in
         match rete_network with
-        | Node (_, bm, node) ->
+        | Node (_, BM bm, node) ->
             let values_map = get_values_map bm vars in
             let mvars = missing_vars values_map
             in
@@ -543,7 +560,8 @@ module InMemory =
       let tuples_set = Helper.TupleSet.empty
       in
         match network with
-        | Node (_, { solutions = sols }, _) ->
+       (* | Node (_, { solutions = sols }, _) ->*)
+			 | Node (_, BM { solutions = sols }, _) ->
             List.fold_right
               (fun (_, var_sols) acc ->
                  let (_, tuples) = var_sols
@@ -560,12 +578,12 @@ module InMemory =
     (* takes a list of AMs and joins them *)
     let execute_am_list ams =
       let empty_bm = { solutions = []; }
-      in List.fold_right (fun am acc -> join am acc) ams empty_bm
+      in List.fold_right (fun am acc -> join am acc) ams InitBM
       
     (* returns solution tuples in a list *)
     let get_sol_tuples network =
       match network with
-      | Node (_, { solutions = sols }, _) ->
+      | Node (_, BM { solutions = sols }, _) ->
           List.fold_right
             (fun (_, var_sols) acc ->
                let (_, tuples) = var_sols

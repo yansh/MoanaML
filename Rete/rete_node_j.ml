@@ -20,9 +20,11 @@ type am_json = Rete_node_t.am_json = {
   vrs: (string * (string * tuple) list) list
 }
 
-type bm_json = Rete_node_t.bm_json = {
+type solutions = Rete_node_t.solutions = {
   sols: (string * (string * tuple list)) list
 }
+
+type bm_json = Rete_node_t.bm_json
 
 type memory = Rete_node_t.memory
 
@@ -1069,7 +1071,7 @@ let read_am_json = (
 )
 let am_json_of_string s =
   read_am_json (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
-let write_bm_json : _ -> bm_json -> _ = (
+let write_solutions : _ -> solutions -> _ = (
   fun ob x ->
     Bi_outbuf.add_char ob '{';
     let is_first = ref true in
@@ -1084,11 +1086,11 @@ let write_bm_json : _ -> bm_json -> _ = (
       ob x.sols;
     Bi_outbuf.add_char ob '}';
 )
-let string_of_bm_json ?(len = 1024) x =
+let string_of_solutions ?(len = 1024) x =
   let ob = Bi_outbuf.create len in
-  write_bm_json ob x;
+  write_solutions ob x;
   Bi_outbuf.contents ob
-let read_bm_json = (
+let read_solutions = (
   fun p lb ->
     Yojson.Safe.read_space p lb;
     Yojson.Safe.read_lcurl p lb;
@@ -1162,8 +1164,138 @@ let read_bm_json = (
           {
             sols = !field_sols;
           }
-         : bm_json)
+         : solutions)
       )
+)
+let solutions_of_string s =
+  read_solutions (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
+let write_bm_json = (
+  fun ob sum ->
+    match sum with
+      | `InitBM -> Bi_outbuf.add_string ob "<\"InitBM\">"
+      | `BM x ->
+        Bi_outbuf.add_string ob "<\"BM\":";
+        (
+          write_solutions
+        ) ob x;
+        Bi_outbuf.add_char ob '>'
+)
+let string_of_bm_json ?(len = 1024) x =
+  let ob = Bi_outbuf.create len in
+  write_bm_json ob x;
+  Bi_outbuf.contents ob
+let read_bm_json = (
+  fun p lb ->
+    Yojson.Safe.read_space p lb;
+    match Yojson.Safe.start_any_variant p lb with
+      | `Edgy_bracket -> (
+          Yojson.Safe.read_space p lb;
+          let f =
+            fun s pos len ->
+              if pos < 0 || len < 0 || pos + len > String.length s then
+                invalid_arg "out-of-bounds substring position or length";
+              try
+                match len with
+                  | 2 -> (
+                      if String.unsafe_get s pos = 'B' && String.unsafe_get s (pos+1) = 'M' then (
+                        1
+                      )
+                      else (
+                        raise (Exit)
+                      )
+                    )
+                  | 6 -> (
+                      if String.unsafe_get s pos = 'I' && String.unsafe_get s (pos+1) = 'n' && String.unsafe_get s (pos+2) = 'i' && String.unsafe_get s (pos+3) = 't' && String.unsafe_get s (pos+4) = 'B' && String.unsafe_get s (pos+5) = 'M' then (
+                        0
+                      )
+                      else (
+                        raise (Exit)
+                      )
+                    )
+                  | _ -> (
+                      raise (Exit)
+                    )
+              with Exit -> (
+                  Ag_oj_run.invalid_variant_tag p (String.sub s pos len)
+                )
+          in
+          let i = Yojson.Safe.map_ident p f lb in
+          match i with
+            | 0 ->
+              Yojson.Safe.read_space p lb;
+              Yojson.Safe.read_gt p lb;
+              `InitBM
+            | 1 ->
+              Ag_oj_run.read_until_field_value p lb;
+              let x = (
+                  read_solutions
+                ) p lb
+              in
+              Yojson.Safe.read_space p lb;
+              Yojson.Safe.read_gt p lb;
+              `BM x
+            | _ -> (
+                assert false
+              )
+        )
+      | `Double_quote -> (
+          let f =
+            fun s pos len ->
+              if pos < 0 || len < 0 || pos + len > String.length s then
+                invalid_arg "out-of-bounds substring position or length";
+              try
+                if len = 6 && String.unsafe_get s pos = 'I' && String.unsafe_get s (pos+1) = 'n' && String.unsafe_get s (pos+2) = 'i' && String.unsafe_get s (pos+3) = 't' && String.unsafe_get s (pos+4) = 'B' && String.unsafe_get s (pos+5) = 'M' then (
+                  0
+                )
+                else (
+                  raise (Exit)
+                )
+              with Exit -> (
+                  Ag_oj_run.invalid_variant_tag p (String.sub s pos len)
+                )
+          in
+          let i = Yojson.Safe.map_string p f lb in
+          match i with
+            | 0 ->
+              `InitBM
+            | _ -> (
+                assert false
+              )
+        )
+      | `Square_bracket -> (
+          Yojson.Safe.read_space p lb;
+          let f =
+            fun s pos len ->
+              if pos < 0 || len < 0 || pos + len > String.length s then
+                invalid_arg "out-of-bounds substring position or length";
+              try
+                if len = 2 && String.unsafe_get s pos = 'B' && String.unsafe_get s (pos+1) = 'M' then (
+                  0
+                )
+                else (
+                  raise (Exit)
+                )
+              with Exit -> (
+                  Ag_oj_run.invalid_variant_tag p (String.sub s pos len)
+                )
+          in
+          let i = Yojson.Safe.map_ident p f lb in
+          match i with
+            | 0 ->
+              Yojson.Safe.read_space p lb;
+              Yojson.Safe.read_comma p lb;
+              Yojson.Safe.read_space p lb;
+              let x = (
+                  read_solutions
+                ) p lb
+              in
+              Yojson.Safe.read_space p lb;
+              Yojson.Safe.read_rbr p lb;
+              `BM x
+            | _ -> (
+                assert false
+              )
+        )
 )
 let bm_json_of_string s =
   read_bm_json (Yojson.Safe.init_lexer ()) (Lexing.from_string s)

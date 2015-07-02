@@ -20,7 +20,9 @@ type am_json = {
   vrs: (string * (string * tuple) list) list
 }
 
-type bm_json = { sols: (string * (string * tuple list)) list }
+type solutions = { sols: (string * (string * tuple list)) list }
+
+type bm_json = [ `InitBM | `BM of solutions ]
 
 type memory = [ `AM of am_json | `BM of bm_json ]
 

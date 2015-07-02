@@ -20,9 +20,11 @@ type am_json = Rete_node_t.am_json = {
   vrs: (string * (string * tuple) list) list
 }
 
-type bm_json = Rete_node_t.bm_json = {
+type solutions = Rete_node_t.solutions = {
   sols: (string * (string * tuple list)) list
 }
+
+type bm_json = Rete_node_t.bm_json
 
 type memory = Rete_node_t.memory
 
@@ -107,6 +109,26 @@ val read_am_json :
 val am_json_of_string :
   string -> am_json
   (** Deserialize JSON data of type {!am_json}. *)
+
+val write_solutions :
+  Bi_outbuf.t -> solutions -> unit
+  (** Output a JSON value of type {!solutions}. *)
+
+val string_of_solutions :
+  ?len:int -> solutions -> string
+  (** Serialize a value of type {!solutions}
+      into a JSON string.
+      @param len specifies the initial length
+                 of the buffer used internally.
+                 Default: 1024. *)
+
+val read_solutions :
+  Yojson.Safe.lexer_state -> Lexing.lexbuf -> solutions
+  (** Input JSON data of type {!solutions}. *)
+
+val solutions_of_string :
+  string -> solutions
+  (** Deserialize JSON data of type {!solutions}. *)
 
 val write_bm_json :
   Bi_outbuf.t -> bm_json -> unit

@@ -17,7 +17,9 @@ tpls: tuple list;
 vrs: (string * (string * tuple) list <json repr="object"> ) list <json repr="object">
 }		
 
-type bm_json = { sols: (string * ( string * tuple list ) <json repr="object">) list<json repr="object">  }			
+type solutions = { sols: (string * ( string * tuple list ) <json repr="object">) list<json repr="object">  }
+
+type bm_json = [| InitBM | BM of solutions]  			
 
 type memory = [AM of am_json | BM of bm_json ]
 
