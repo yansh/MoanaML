@@ -38,7 +38,7 @@ let jon =
   
 let amir =
   Helper.to_tuple_lst
-    "{(b,fn,Amir, contacts)
+    "{(b,fn,Amir,contacts) 
 		(b,last,Chaudhry,contacts)    
    (b,email,amir.chaudhry@cl.cam.ac.uk,contacts)
 	 (b,twitter,@amirmc,contacts)
@@ -51,7 +51,7 @@ let amir =
   
 let anil =
   Helper.to_tuple_lst
-    "{(c,fn,Anil, contacts)
+    "{(c,fn,Anil,contacts) 
 	  (c,last,Madhavapeddy, contacts)
    (c,email,anil@recoil.org,contacts)    
 	 (c,image,anil.jpg, contacts)
@@ -61,7 +61,7 @@ let anil =
   
 let carlos =
   Helper.to_tuple_lst
-    "{(d,fn,Carlos, contacts)
+    "{(d,fn,Carlos,contacts) 
 	 (d,last,Molina-jimenez, contacts)
 	 (d,image,carlos.jpg, contacts)    
    (d,email,cm770@cam.ac.uk,contacts)        
@@ -112,10 +112,9 @@ let q1 =
 
 (* let prnt = Helper.print_tuples_list contacts*)
   
-let results = (ReteImpl.InMemory.exec_qry q2 (List.flatten contacts)) |> (ReteImpl.InMemory.exec_bm q2)
+let results = (ReteImpl.InMemory.exec_qry q1 (List.flatten (contacts @ [policies]))) |> (ReteImpl.InMemory.exec_bm q2)
 
 
-  
 let (ReteImpl.InMemory.Node (_, BM res_bm, _)) = results
   
 let p2 =
@@ -128,7 +127,7 @@ let r_map = ReteImpl.InMemory.get_res_map results [ "?y"; "?fn"; "?last"; "?emai
 let _ = Helper.StringMap.iter Helper.print_var r_map 
   
  (********* Testing unified Moana graph signature ****)
-let _ = print_string "---------------------------------\n"
+let _ = print_string "---------------GRAPH signature----------------\n"
 let q2_ = Helper.str_query_list
   "MAP {
 	?y,fn,?name,contacts
@@ -144,10 +143,13 @@ let q1_ = Helper.str_query_list
 	}"
   
 
-(*let prnt = Helper.print_tuples_list contacts  *)
+
+(*let contact_and_policies_graph = Moana_rete.G.init (List.flatten (contacts @ [policies])) 
+
+let result = Moana_rete.G.map contact_and_policies_graph  ~tuples:q2_*)
+
 module G = Moana.Make(Moana_rete.S) 
 
-let graph = G.init (List.flatten contacts) |> G.map  ~tuples:policies |> G.map ~tuples:q2_|> G.map  ~tuples:policies |> G.map ~tuples:q2_
-
+let graph = G.init (List.flatten (contacts @ [policies])) |>  G.map  ~tuples:q1_ |> G.map ~tuples:q2_
 
 let _ = Helper.print_tuples (G.to_list graph)
