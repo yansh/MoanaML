@@ -39,8 +39,8 @@ module S : STORE = struct
 
   let init ?query tuples = hlp query |> function
 		| [] -> InMemory.BNode(tuples)
-	  |	queries -> InMemory.to_rete_dataflow queries tuples (*let n = Rete.to_rete_dataflow queries tuples in let Rete.Node (_, bm, _) = n 
-		in let p2 = Rete.print_bm bm in n*)
+	  |	queries -> InMemory.to_rete_dataflow queries tuples (*in let (ReteImpl.InMemory.Node (_, BM res_bm, _)) = s in
+let p = ReteImpl.InMemory.print_bm (BM res_bm) in s*)
 
   let add storage tuple =  ReteImpl.InMemory.add storage tuple
 
@@ -48,15 +48,15 @@ module S : STORE = struct
 
   let query (store : t) (q : Config.tuple list) =  (*let Rete.Node (_, bm, _) = store in let p2 = Rete.print_bm bm in
 	 let  p = print_string (string_of_int (List.length (Helper.flatten_tuple_list (Rete.get_sol_tuples store)))) in*) 
-	store |>  ReteImpl.InMemory.get_sol_tuples 
+	store |>  InMemory.get_sol_tuples 
 
   let to_list store = 
-		(*let  p = print_string "--->";print_string (string_of_int (List.length (Helper.flatten_tuple_list (Rete.get_sol_tuples store)))) in*) 
-		ReteImpl.InMemory.get_sol_tuples store |> Helper.flatten_tuple_list 
+		(*let  p = print_string "--->";print_string (string_of_int (List.length (Helper.flatten_tuple_list (ReteImpl.InMemory.get_sol_tuples store)))) in*) 
+		InMemory.get_sol_tuples store |> Helper.flatten_tuple_list 
 end
 
 
-(* Moana GRAPH with List storage as a backend *)
+(* Moana GRAPH with Rete storage as a backend *)
 module G : GRAPH = struct
 
   module RS = S
@@ -72,9 +72,12 @@ module G : GRAPH = struct
     print_endline s;
     RS.add g tuple
 
-
-  (* in RETE the result is located in the last BM in the network, no need to run any mechanism *)
-	let map g ~tuples:query = g
+(*we get the results from the previous graph to boot strap a new graph *)
+	let map g ~tuples:q=
+		let qry = Some(q) in (* convert query tuples to 'option' as required by RS.init *) 
+		 let sol = RS.to_list g in
+				 RS.init ?query:qry sol 
+		 
 	
 	let to_list  = RS.to_list 
 				
@@ -89,3 +92,5 @@ module G : GRAPH = struct
                 string_lst rest in
     string_lst dbList *)
 end
+
+
