@@ -22,7 +22,7 @@ open Yojson
 let to_string tuple =
 	let get_val value = match value with
 		| Constant c -> c
-		| Variable v -> ("?"^v) in
+		| Variable v -> v in
 					Printf.sprintf "< %s %s %s %s>" (get_val  tuple.subj)  
 					(get_val tuple.pred)  (get_val tuple.obj)  (get_val tuple.ctxt)
 
